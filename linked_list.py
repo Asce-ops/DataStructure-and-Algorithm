@@ -185,3 +185,16 @@ class LinkedList:
                 result += ' -> '
             cur = cur._next
         return result
+    
+    def __iter__(self):
+        '''使自身可迭代'''
+        self.__tmp = self._head
+        return self
+    
+    def __next__(self) -> int:
+        '''迭代自身'''
+        cur =  self.__tmp
+        if cur is None:
+            raise StopIteration
+        self.__tmp = self.__tmp._next
+        return cur._val

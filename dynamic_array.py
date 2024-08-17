@@ -108,3 +108,16 @@ class dynamic_array:
                 result += ', '
         result += ']'
         return result
+    
+    def __iter__(self):
+        '''使自身可迭代'''
+        self._idx = 0
+        return self
+    
+    def __next__(self) -> int:
+        '''迭代自身'''
+        cur = self._idx
+        if cur >= self._size:
+            raise StopIteration 
+        self._idx += 1
+        return self._arr[cur]
