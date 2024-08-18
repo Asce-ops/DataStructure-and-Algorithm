@@ -1,9 +1,11 @@
+# type: ignore
+
 class ArrayStack:
     '''基于数组实现的栈'''
     def __init__(self) -> None:
         '''构造方法'''
-        self._stack: list[int] = [] # 用列表来模拟数组
-        self._size: int = 0
+        self._stack: list[int] = [] # 用于存储栈元素的数组
+        self._size: int = 0 # 栈的长度
     
     def __len__(self) -> int:
         '''查看栈中元素个数'''
@@ -30,6 +32,10 @@ class ArrayStack:
     def is_empty(self) -> bool:
         '''是否是空栈'''
         return self._size == 0
+    
+    def to_list(self) -> list[int]:
+        '''返回列表，尾部是栈顶'''
+        return self._stack
     
 
 
@@ -77,3 +83,13 @@ class LinkedListStack:
     def is_empty(self) -> bool:
         '''是否是空栈'''
         return self._peek is None
+    
+    def to_list(self) -> list[int]:
+        '''返回列表，尾部是栈顶'''
+        result = [None] * self._size
+        cur, idx = self._peek, self._size - 1
+        while cur is not None:
+            result[idx] = cur._val
+            cur = cur._next
+            idx -= 1
+        return result

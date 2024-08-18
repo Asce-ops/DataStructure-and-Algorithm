@@ -5,14 +5,14 @@ class dynamic_array:
     def __init__(self) -> None:
         '''构造方法'''
         self._capacity: int = 10 # 数组容量
-        self._arr: list[int] = [None] * self._capacity # 实际用于存储元素的数组
+        self._arr: list[int | None] = [None] * self._capacity # 实际用于存储元素的数组
         self._size: int = 0 # 当前存储的元素数量
         self._extend_ratio: int = 2 # 每次扩容的倍数
 
     def append(self, item: int) -> None:
         '''在尾部追加元素'''
         if self._size >= self._capacity: # 容量不足，扩容
-            self.extend()
+            self._extend()
         self._arr[self._size] = item
         self._size += 1 # 更新元素数量
 
@@ -21,7 +21,7 @@ class dynamic_array:
         if idx < 0 or idx > self._size: # 索引越界
             raise IndexError('索引越界')
         if self._size >= self._capacity: # 容量不足，扩容
-            self.extend()
+            self._extend()
         for i in range(self._size, idx, -1): # 从后往前逐个移动元素
             self._arr[i] = self._arr[i-1]
         self._arr[idx] = item
@@ -53,7 +53,7 @@ class dynamic_array:
                 return
         raise ValueError(f'{item}不在数组中')
     
-    def extend(self) -> None:
+    def _extend(self) -> None:
         '''扩容数组'''
         cur = self._arr
         self._capacity *= self._extend_ratio
@@ -111,13 +111,13 @@ class dynamic_array:
     
     def __iter__(self):
         '''使自身可迭代'''
-        self._idx = 0
+        self.__tmp = 0
         return self
     
     def __next__(self) -> int:
         '''迭代自身'''
-        cur = self._idx
+        cur = self.__tmp
         if cur >= self._size:
             raise StopIteration 
-        self._idx += 1
+        self.__tmp += 1
         return self._arr[cur]
