@@ -4,30 +4,44 @@ class ArrayStack:
     '''基于数组实现的栈'''
     def __init__(self) -> None:
         '''构造方法'''
-        self._stack: list[int] = [] # 用于存储栈元素的数组
+        self._capacity: int = 10 # 栈的容量
+        self._stack: list[int | None] = [None] * self._capacity # 用于存储栈元素的数组
         self._size: int = 0 # 栈的长度
-    
+        self._extend_ratio: int = 2 # 每次扩容的倍数
+
     def __len__(self) -> int:
         '''查看栈中元素个数'''
         return self._size
     
     def push(self, item: int) -> None:
         '''入栈'''
-        self._stack.append(item)
+        if self._size >= self._capacity: # 扩容
+            self._extend()
+        self._stack[self._size] = item
         self._size += 1
+
+    def _extend(self) -> None:
+        '''扩容'''
+        cur = self._stack
+        self._capacity *= self._extend_ratio
+        self._stack = [None] * self._capacity
+        for i in range(self._size):
+            self._stack[i] = cur[i]
 
     def pop(self) -> int:
         '''出栈'''
         if self._size == 0:
             raise IndexError('栈为空')
         self._size -= 1
-        return self._stack.pop()
+        result = self._stack[self._size]
+        self._stack[self._size] = None
+        return result
 
     def peek(self) -> int:
         '''查看栈顶元素'''
         if self._size == 0:
             raise IndexError('栈为空')
-        return self._stack[-1]
+        return self._stack[self._size - 1]
     
     def is_empty(self) -> bool:
         '''是否是空栈'''
@@ -35,7 +49,10 @@ class ArrayStack:
     
     def to_list(self) -> list[int]:
         '''返回列表，尾部是栈顶'''
-        return self._stack
+        result = [None] * self._size
+        for i in range(self._size):
+            result[i] = self._stack[i]
+        return result
     
 
 

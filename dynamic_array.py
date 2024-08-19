@@ -99,14 +99,11 @@ class dynamic_array:
                 return True
         return False
     
-    def __repr__(self) -> str:
-        '''可视化有效长度的数组'''
-        result = '['
+    def to_list(self) -> list[int]:
+        '''返回列表'''
+        result = [None] * self._size
         for i in range(self._size):
-            result += f'{self._arr[i]}'
-            if i != self._size - 1:
-                result += ', '
-        result += ']'
+            result[i] = self._arr[i]
         return result
     
     def __iter__(self):

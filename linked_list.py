@@ -175,15 +175,15 @@ class LinkedList:
             idx += 1
         raise ValueError(f'{val}不在链表中')
     
-    def __repr__(self) -> str:
-        '''可视化链表'''
-        result = ''
+    def to_list(self) -> list[int]:
+        '''返回列表，左端是头节点'''
+        result = [None] * self._size
         cur = self._head
+        idx = 0
         while cur is not None:
-            result += f'{cur._val}'
-            if cur._next is not None:
-                result += ' -> '
+            result[idx] = cur._val
             cur = cur._next
+            idx += 1
         return result
     
     def __iter__(self):
