@@ -1,6 +1,6 @@
 # type: ignore
 
-class dynamic_array:
+class DynamicArray:
     '''使用列表来模拟（动态）数组'''
     def __init__(self) -> None:
         '''构造方法'''
