@@ -2,9 +2,9 @@
 
 class DynamicArray:
     '''使用列表来模拟（动态）数组'''
-    def __init__(self) -> None:
+    def __init__(self, capacity: int = 10) -> None:
         '''构造方法'''
-        self._capacity: int = 10 # 数组容量
+        self._capacity: int = capacity # 数组容量
         self._arr: list[int | None] = [None] * self._capacity # 实际用于存储元素的数组
         self._size: int = 0 # 当前存储的元素数量
         self._extend_ratio: int = 2 # 每次扩容的倍数
@@ -61,7 +61,7 @@ class DynamicArray:
         for i in range(self._size): # 将元素逐个复制到新的内存块中
             self._arr[i] = cur[i]
 
-    def __getitem__(self, idx: int) -> int:
+    def get(self, idx: int) -> int:
         '''查看指定位置的元素'''
         if idx not in range(-1 * self._size, self._size): # 索引越界
             raise IndexError('索引越界')
@@ -69,7 +69,7 @@ class DynamicArray:
             idx = (idx + self._size) % self._size
         return self._arr[idx]
     
-    def __setitem__(self, idx: int, item: int) -> None:
+    def set(self, idx: int, item: int) -> None:
         '''修改指定位置的元素'''
         if idx not in range(-1 * self._size, self._size): # 索引越界
             raise IndexError('索引越界')
@@ -83,6 +83,12 @@ class DynamicArray:
             if self._arr[i] == item:
                 return i
         raise ValueError(f'{item}不在数组中')
+    
+    def __getitem__(self, idx: int) -> int:
+        return self.get(idx=idx)
+    
+    def __setitem__(self, idx: int, item: int) -> None:
+        self.set(idx=idx, item=item)
 
     def __len__(self) -> int:
         '''获取数组的长度'''
@@ -108,7 +114,7 @@ class DynamicArray:
     
     def __iter__(self):
         '''使自身可迭代'''
-        self.__tmp = 0
+        self.__tmp: int = 0
         return self
     
     def __next__(self) -> int:

@@ -118,7 +118,7 @@ class LinkedList:
                 cur = cur._next
             raise ValueError(f'{val}不在链表中')
         
-    def __getitem__(self, idx: int) -> int:
+    def get(self, idx: int) -> int:
         '''查看指定位置的元素'''
         if idx < -1 * self._size or idx >= self._size: # 索引越界
             raise IndexError('索引越界')
@@ -134,7 +134,7 @@ class LinkedList:
                 cur = cur._next
             return cur._val
         
-    def __setitem__(self, idx: int, val: int) -> None:
+    def set(self, idx: int, val: int) -> None:
         '''修改指定位置的元素'''
         if idx < -1 * self._size or idx >= self._size: # 索引越界
             raise IndexError('索引越界')
@@ -149,6 +149,12 @@ class LinkedList:
             for _ in range(idx):
                 cur = cur._next
             cur._val = val
+
+    def __getitem__(self, idx: int) -> int:
+        return self.get(idx=idx)
+    
+    def __setitem__(self, idx: int, val: int) -> None:
+        self.set(idx=idx, val=val)
 
     def __len__(self) -> int:
         '''查看链表长度'''
@@ -188,12 +194,12 @@ class LinkedList:
     
     def __iter__(self):
         '''使自身可迭代'''
-        self.__tmp = self._head
+        self.__tmp: ListNode | None = self._head
         return self
     
     def __next__(self) -> int:
         '''迭代自身'''
-        cur =  self.__tmp
+        cur = self.__tmp
         if cur is None:
             raise StopIteration
         self.__tmp = self.__tmp._next

@@ -48,7 +48,7 @@ class BinarySearchTree:
                 cur = cur.right
             else: # 定位到了待删除元素的位置
                 '''寻找用于替换待删除节点的元素'''
-                if (cur.left is None) or (cur.right is None): # 用待删除节点唯一的子节点或 None 来替换待删除节点
+                if (cur.left is None) or (cur.right is None): # 至多只有一个子节点，用待删除节点唯一的子节点或 None 来替换待删除节点
                     tmp: TreeNode | None = cur.left or cur.right
                 else: # 用待删除节点的后继节点（比当前节点大的最小的节点）来替换待删除节点
                     tmp: TreeNode | None = cur.right # 后继节点
@@ -113,7 +113,7 @@ from Array import DynamicArray
 def level_order(root: TreeNode | None) -> DynamicArray:
     '''层序遍历（即广度优先遍历，从顶部到底部逐层遍历二叉树）'''
     queue: ArrayQueue[TreeNode] = ArrayQueue()
-    result: DynamicArray[int] = DynamicArray()
+    result: DynamicArray[int | None] = DynamicArray()
     if root is not None:
         queue.enqueue(item=root)
     while not queue.is_empty():
@@ -185,4 +185,5 @@ class AvlTree(BinarySearchTree):
             node.height = max(AvlTree.get_height(node=node.left), AvlTree.get_height(node=node.right)) + 1
     
     @staticmethod
-    def get_balance_factor()
+    def get_balance_factor():
+        pass

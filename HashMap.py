@@ -82,7 +82,7 @@ class HashMapOpenAddressing:
     def get(self, key: int) -> str:
         '''查询键值对'''
         idx = self.index(key=key)
-        return self._bucket[idx]
+        return self._bucket[idx]._val
     
     def _extend(self) -> None:
         '''扩容'''
@@ -107,6 +107,8 @@ class HashMapOpenAddressing:
             if (item is not None) and (item is not self._TOMBSTONE):
                 result[idx] = item._key
                 idx += 1
+            if idx >= self._size:
+                break
         return result
     
     def values(self) -> list[str]:
@@ -118,6 +120,8 @@ class HashMapOpenAddressing:
             if (item is not None) and (item is not self._TOMBSTONE):
                 result[idx] = item._val
                 idx += 1
+            if idx >= self._size:
+                break
         return result
     
     def __getitem__(self, key: int) -> str:
@@ -139,6 +143,17 @@ class HashMapOpenAddressing:
         except KeyError:
             return False
         
+    def __iter__(self):
+        self.__tmp: int = 0
+        return self
+    
+    def __next__(self) -> int:
+        while self.__tmp < self._capacity:
+            item = self._bucket[self.__tmp]
+            self.__tmp += 1
+            if (item is not None) and (item is not self._TOMBSTONE):
+                return item._key
+        raise StopIteration
 
 
 class Node:

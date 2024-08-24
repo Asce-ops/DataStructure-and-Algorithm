@@ -2,9 +2,9 @@
 
 class ArrayStack:
     '''基于数组实现的栈'''
-    def __init__(self) -> None:
+    def __init__(self, capacity: int = 10) -> None:
         '''构造方法'''
-        self._capacity: int = 10 # 栈的容量
+        self._capacity: int = capacity # 栈的容量
         self._stack: list[int | None] = [None] * self._capacity # 用于存储栈元素的数组
         self._size: int = 0 # 栈的长度
         self._extend_ratio: int = 2 # 每次扩容的倍数

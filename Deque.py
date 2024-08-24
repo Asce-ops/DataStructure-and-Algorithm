@@ -2,9 +2,9 @@
 
 class ArrayDeque:
     '''基于数组实现的双端队列'''
-    def __init__(self) -> None:
+    def __init__(self, capacity: int = 10) -> None:
         '''构造方法，self._deque 的有效区间段为 [self._head, self._head + self._size - 1]'''
-        self._capacity: int = 10 # 队列容量
+        self._capacity: int = capacity # 队列容量
         self._deque: list[int | None] = [None] * self._capacity # 用于存储队列元素的数组
         self._head: int = 0 # 队首指针，指向队首元素
         self._size: int = 0 # 队列长度
