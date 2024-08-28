@@ -13,14 +13,14 @@ class HashMapOpenAddressing:
     采用惰性删除机制，否则再哈希过程中可能会提前停止；
     除了更新键值对，其他操作时不要改变键值对的存放位置
     '''
-    def __init__(self) -> None:
+    def __init__(self, capacity: int = 13) -> None:
         '''构造方法'''
-        self._capacity = 13 # 哈希表容量
+        self._capacity: int = capacity # 哈希表容量
         self._bucket: list[Pair | None] = [None] * self._capacity # 数组桶
         self._size: int = 0 # 键值对数量
         self._extend_ratio: int = 2 # 扩容系数
         self._load_thres: float = 0.75 # 触发扩容的负载因子阈值
-        self._TOMBSTONE = Pair(key=-1, val='-1') # 删除标记
+        self._TOMBSTONE: Pair = Pair(key=-1, val='-1') # 删除标记
 
     @staticmethod # 静态方法（用类名或者实例来调用）
     def hash(key: int) -> int:
@@ -144,16 +144,16 @@ class HashMapOpenAddressing:
             return False
         
     def __iter__(self):
-        self.__tmp: int = 0
-        self.__cur: int = 0
+        self.__idx: int = 0 # 当前桶
+        self.__cur: int = 0 # 已经遍历了的元素个数
         return self
     
-    def __next__(self) -> int:
-        while self.__tmp < self._capacity:
+    def __next__(self) -> int: # 遍历返回键
+        while self.__idx < self._capacity:
             if self.__cur == self._size:
                 break
-            item = self._bucket[self.__tmp]
-            self.__tmp += 1
+            item = self._bucket[self.__idx]
+            self.__idx += 1
             if (item is not None) and (item is not self._TOMBSTONE):
                 self.__cur += 1
                 return item._key
@@ -169,13 +169,10 @@ class Node:
         self.next: Node | None = None
 
 class HashMapChaining:
-    '''
-    链式地址哈希表，
-    数组的每一个桶存储的都是节点，无需扩容
-    '''
-    def __init__(self) -> None:
+    '''链式地址哈希表，数组的每一个桶存储的都是节点（无需扩容）'''
+    def __init__(self, capacity: int = 13) -> None:
         '''构造方法'''
-        self._capacity: int = 13
+        self._capacity: int = capacity
         self._bucket: list[Node | None] = [None] * self._capacity
         self._size: int = 0
 
@@ -187,7 +184,7 @@ class HashMapChaining:
     def hash_func(self, key: int) -> int:
         '''哈希函数'''
         return self.hash(key=key) % self._capacity
-    
+
     def put(self, key: int, val: str) -> None:
         '''新增或更新键值对'''
         idx = self.hash_func(key=key)
@@ -278,3 +275,39 @@ class HashMapChaining:
             return True
         except KeyError:
             return False
+        
+    def __iter__(self):
+        self.__idx: int = 0 # 当前桶
+        self.__cur: int = 0 # 已经遍历了的元素个数
+        self.__tmp: Node | None = self._bucket[self.__idx] # 当前节点
+        return self
+    
+    def __next__(self) -> int: # 遍历返回键
+        while self.__idx < self._capacity:
+            if self.__cur == self._size:
+                break
+            if self.__tmp is not None:
+                result = self.__tmp._key
+                self.__tmp = self.__tmp.next
+                self.__cur += 1
+                return result
+            else:
+                self.__idx += 1
+                self.__tmp = self._bucket[self.__idx]
+        raise StopIteration
+    
+
+
+
+if __name__ == '__main__':
+    h1, h2 = HashMapOpenAddressing(), HashMapChaining()
+    for i in range(30):
+        h1.put(key=i, val=str(i))
+        h2.put(key=i, val=str(i))
+    del h1[3]
+    print('开始遍历h1')
+    for i in h1:
+        print(i)
+    print('开始遍历h2')
+    for i in h2:
+        print(i)
