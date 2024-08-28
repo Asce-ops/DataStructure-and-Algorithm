@@ -129,7 +129,7 @@ def graph_bfs(graph: Graph, start_vertex: int) -> DynamicArray:
     while len(queue) > 0:
         cur = queue.dequeue()
         result.append(item=cur.val)
-        for i in cur.get_to_edges().keys():
+        for i in cur.get_to_edges():
             if i not in visited:
                 queue.enqueue(item=graph[i])
                 visited.put(key=i, val=None)
@@ -144,7 +144,7 @@ def graph_dfs(graph: Graph, start_vertex: int) -> DynamicArray:
     def dfs(vertex: int) -> None:
         result.append(item=vertex)
         visited.put(key=vertex, val=None)
-        for i in graph[vertex].get_to_edges().keys():
+        for i in graph[vertex].get_to_edges():
             if i not in visited:
                 dfs(vertex=i)
     dfs(vertex=start_vertex)

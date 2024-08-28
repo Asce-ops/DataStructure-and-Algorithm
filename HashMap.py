@@ -145,13 +145,17 @@ class HashMapOpenAddressing:
         
     def __iter__(self):
         self.__tmp: int = 0
+        self.__cur: int = 0
         return self
     
     def __next__(self) -> int:
         while self.__tmp < self._capacity:
+            if self.__cur == self._size:
+                break
             item = self._bucket[self.__tmp]
             self.__tmp += 1
             if (item is not None) and (item is not self._TOMBSTONE):
+                self.__cur += 1
                 return item._key
         raise StopIteration
 
