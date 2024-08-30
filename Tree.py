@@ -1,3 +1,5 @@
+from Queue import ArrayQueue
+
 class TreeNode:
     '''二叉树节点'''
     def __init__(self, key: int, val: str) -> None:
@@ -113,6 +115,57 @@ class BinarySearchTree:
         
     def __len__(self) -> int:
         return self._size
+    
+    def __iter__(self):
+        self._queue: ArrayQueue[TreeNode] = ArrayQueue()
+        if self._root is not None:
+            self._queue.enqueue(item=self._root)
+        return self
+    
+    def __next__(self) -> int:
+        '''层序遍历迭代自身'''
+        while not self._queue.is_empty():
+            result: int = self._queue.dequeue()
+            if result.left is not None:
+                self._queue.enqueue(item=result.left)
+            if result.right is not None:
+                self._queue.enqueue(item=result.right)
+            return result.key
+        raise StopIteration
+    
+    def keys(self) -> list[int]:
+        '''层序遍历查看所有键'''
+        queue: ArrayQueue[TreeNode] = ArrayQueue()
+        result: list[int | None] = [None] * self._size
+        idx: int = 0
+        if self._root is not None:
+            queue.enqueue(item=self._root)
+        while not queue.is_empty():
+            cur: TreeNode = queue.dequeue()
+            result[idx] = cur.key
+            idx += 1
+            if cur.left is not None:
+                queue.enqueue(item=cur.left)
+            if cur.right is not None:
+                queue.enqueue(item=cur.right)
+        return result
+        
+    def values(self) -> list[str]:
+        '''层序遍历查看所有值'''
+        queue: ArrayQueue[TreeNode] = ArrayQueue()
+        result: list[str | None] = [None] * self._size
+        idx: int = 0
+        if self._root is not None:
+            queue.enqueue(item=self._root)
+        while not queue.is_empty():
+            cur: TreeNode = queue.dequeue()
+            result[idx] = cur.val
+            idx += 1
+            if cur.left is not None:
+                queue.enqueue(item=cur.left)
+            if cur.right is not None:
+                queue.enqueue(item=cur.right)
+        return result
     
 
 
@@ -358,10 +411,61 @@ class AvlTree():
         
     def __len__(self) -> int:
         return self._size
+    
+    def __iter__(self):
+        self._queue: ArrayQueue[AvlTreeNode] = ArrayQueue()
+        if self._root is not None:
+            self._queue.enqueue(item=self._root)
+        return self
+    
+    def __next__(self) -> int:
+        '''层序遍历迭代自身'''
+        while not self._queue.is_empty():
+            result: int = self._queue.dequeue()
+            if result.left is not None:
+                self._queue.enqueue(item=result.left)
+            if result.right is not None:
+                self._queue.enqueue(item=result.right)
+            return result.key
+        raise StopIteration
+    
+    def keys(self) -> list[int]:
+        '''层序遍历查看所有键'''
+        queue: ArrayQueue[AvlTreeNode] = ArrayQueue()
+        result: list[int | None] = [None] * self._size
+        idx: int = 0
+        if self._root is not None:
+            queue.enqueue(item=self._root)
+        while not queue.is_empty():
+            cur: TreeNode = queue.dequeue()
+            result[idx] = cur.key
+            idx += 1
+            if cur.left is not None:
+                queue.enqueue(item=cur.left)
+            if cur.right is not None:
+                queue.enqueue(item=cur.right)
+        return result
+        
+    def values(self) -> list[str]:
+        '''层序遍历查看所有值'''
+        queue: ArrayQueue[AvlTreeNode] = ArrayQueue()
+        result: list[str | None] = [None] * self._size
+        idx: int = 0
+        if self._root is not None:
+            queue.enqueue(item=self._root)
+        while not queue.is_empty():
+            cur: TreeNode = queue.dequeue()
+            result[idx] = cur.val
+            idx += 1
+            if cur.left is not None:
+                queue.enqueue(item=cur.left)
+            if cur.right is not None:
+                queue.enqueue(item=cur.right)
+        return result
+
 
 
 '''二叉树的遍历'''
-from Queue import ArrayQueue
 from LinkedList import LinkedList
 
 def level_order(root: TreeNode | AvlTreeNode | None) -> LinkedList:
@@ -372,7 +476,7 @@ def level_order(root: TreeNode | AvlTreeNode | None) -> LinkedList:
         queue.enqueue(item=root)
     while not queue.is_empty():
         cur: TreeNode = queue.dequeue()
-        result.append(val=cur.val)
+        result.append(val=cur.key)
         if cur.left is not None:
             queue.enqueue(item=cur.left)
         if cur.right is not None:
@@ -388,7 +492,7 @@ def pre_order(root: TreeNode | AvlTreeNode | None, result: LinkedList) -> None: 
     if root is None:
         return
     '''访问优先级：根节点 -> 左子树 -> 右子树'''
-    result.append(val=root.val)
+    result.append(val=root.key)
     pre_order(root=root.left, result=result)
     pre_order(root=root.right, result=result)
 
@@ -398,7 +502,7 @@ def in_order(root: TreeNode | AvlTreeNode | None, result: LinkedList) -> None:
         return
     '''访问优先级：左子树 -> 根节点 -> 右子树'''
     in_order(root=root.left, result=result)
-    result.append(val=root.val)
+    result.append(val=root.key)
     in_order(root=root.right, result=result)
 
 def post_order(root: TreeNode | AvlTreeNode | None, result: LinkedList) -> None:
@@ -408,7 +512,7 @@ def post_order(root: TreeNode | AvlTreeNode | None, result: LinkedList) -> None:
     '''访问优先级：左子树 -> 右子树 -> 根节点'''
     post_order(root=root.left, result=result)
     post_order(root=root.right, result=result)
-    result.append(val=root.val)
+    result.append(val=root.key)
 
 
 
@@ -436,3 +540,7 @@ if __name__ == '__main__':
     l = LinkedList()
     pre_order(root=avl.get_root(), result=l)
     print(l.to_list())
+    for i in avl:
+        print(i)
+    print(avl.keys())
+    print(avl.values())

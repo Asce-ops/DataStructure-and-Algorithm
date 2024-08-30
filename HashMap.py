@@ -83,20 +83,26 @@ class HashMapOpenAddressing:
         '''查询键值对'''
         idx = self.index(key=key)
         return self._bucket[idx]._val
-    
+
     def _extend(self) -> None:
         '''扩容'''
         cur = self._bucket
         prev_capacity = self._capacity
         self._capacity *= self._extend_ratio
         self._bucket = [None] * self._capacity
-        for i in range(prev_capacity):
+        i: int = 0 # 当前桶
+        n: int = 0 # 已经复制了的元素个数
+        while i < prev_capacity:
+            if n == self._size:
+                break
             item = cur[i]
+            i += 1
             if (item is not None) and (item is not self._TOMBSTONE):
                 idx = self.hash_func(key=item._key)
                 while self._bucket[idx] is not None:
                     idx = self.rehash(old_hash=idx)
                 self._bucket[idx] = item
+                n += 1
 
     def keys(self) -> list[int]:
         '''查看所有键'''
@@ -169,12 +175,14 @@ class Node:
         self.next: Node | None = None
 
 class HashMapChaining:
-    '''链式地址哈希表，数组的每一个桶存储的都是节点（无需扩容）'''
+    '''链式地址哈希表，数组的每一个桶存储的都是节点'''
     def __init__(self, capacity: int = 13) -> None:
         '''构造方法'''
         self._capacity: int = capacity
         self._bucket: list[Node | None] = [None] * self._capacity
         self._size: int = 0
+        self._extend_ratio: int = 2 # 扩容系数
+        self._avg_thres: int = 8 # 平均每个桶可以存储的最大元素个数（用于触发扩容）
 
     @staticmethod # 静态方法（用类名或者实例来调用）
     def hash(key: int) -> int:
@@ -187,6 +195,8 @@ class HashMapChaining:
 
     def put(self, key: int, val: str) -> None:
         '''新增或更新键值对'''
+        if self._size >= self._avg_thres * self._capacity: # 扩容
+            self._extend()
         idx = self.hash_func(key=key)
         if self._bucket[idx] is not None:
             cur = self._bucket[idx]
@@ -202,16 +212,6 @@ class HashMapChaining:
         else: # 桶为空，直接在此处存储元素
             self._bucket[idx] = Node(key=key, val=val)
         self._size += 1
-
-    def get(self, key: int) -> str:
-        '''查询键值对'''
-        idx = self.hash_func(key=key)
-        cur = self._bucket[idx]
-        while cur is not None:
-            if cur._key == key: # 键存在，返回值
-                return cur._val
-            cur = cur.next
-        raise KeyError(f'{key}不在哈希表中')
     
     def remove(self, key: int) -> None:
         '''删除键值对'''
@@ -232,6 +232,39 @@ class HashMapChaining:
                     return
                 cur = cur.next
         raise KeyError(f'{key}不在哈希表中')
+    
+    def get(self, key: int) -> str:
+        '''查询键值对'''
+        idx = self.hash_func(key=key)
+        cur = self._bucket[idx]
+        while cur is not None:
+            if cur._key == key: # 键存在，返回值
+                return cur._val
+            cur = cur.next
+        raise KeyError(f'{key}不在哈希表中')
+    
+    def _extend(self) -> None:
+        '''扩容'''
+        cur = self._bucket
+        prev_capacity = self._capacity
+        self._capacity *= self._extend_ratio
+        self._bucket = [None] * self._capacity
+        i: int = 0 # 当前桶
+        n: int = 0 # 已经复制了的元素个数
+        item: Node | None = cur[i] # 当前节点
+        while i < prev_capacity:
+            if n == self._size:
+                break
+            if item is not None:
+                idx = self.hash_func(key=item._key)
+                tmp: Node | None = self._bucket[idx]
+                self._bucket[idx] = item # 在链表头部新增节点
+                item = item.next
+                self._bucket[idx].next = tmp # 更新完 item 再更新链表头节点的下一个指向
+                n += 1
+            else:
+                i += 1
+                item = cur[i]
     
     def keys(self) -> list[int]:
         '''查看所有键'''

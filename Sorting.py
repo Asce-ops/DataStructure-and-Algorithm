@@ -166,4 +166,40 @@ def merge_sort(arr: list[int], left: int, right: int, asc: bool = True):
 
 
 
-def 
+def quick_sort(arr :list[int]):
+    '''
+    快速排序
+    '''
+    pass
+
+
+
+def heap_sort(arr: list[int]):
+    '''
+    堆排序
+    '''
+    pass
+
+
+
+def bucket_sort(arr: list[int]):
+    '''
+    桶排序
+    '''
+    pass
+
+
+
+def counting_sort(arr: list[int]):
+    '''
+    计数排序
+    '''
+    pass
+
+
+
+def radix_sort(arr: list[int]):
+    '''
+    基数排序
+    '''
+    pass
