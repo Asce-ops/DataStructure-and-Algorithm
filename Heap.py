@@ -7,7 +7,7 @@ class MaxHeap:
             self._capacity: int = 10 # 容量
             self._heap: list[int | None] = [None] * self._capacity
             self._size: int = 0
-        else: # 堆化
+        else: # 堆化现有数组
             self._capacity: int = len(data)
             self._heap: list[int | None] = [None] * self._capacity
             self._size: int = self._capacity
@@ -16,7 +16,7 @@ class MaxHeap:
                 self._heap[i] = data[i]
             for i in range(last_leaf, -1, -1):
                 '''
-                倒序遍历堆（层序遍历的倒序），依次对每个非叶节点执行“从顶至底堆化”；
+                倒序遍历数组（层序遍历的倒序），依次对每个非叶节点执行“从顶至底堆化”；
                 每当堆化一个节点后，以该节点为根节点的子树就形成一个合法的子堆。
                 '''
                 self._heap[i] = data[i]
@@ -199,3 +199,7 @@ if __name__ == '__main__':
     data = [9, 8, 6, 6, 7, 5, 2, 1, 4, 3, 6, 2]
     result = TopK(data=data, k=5)
     print(result)
+    result2 = TopK(data=data, k=5, minimum=False)
+    print(result2)
+    h: MaxHeap = MaxHeap(data=data)
+    print(h._heap)

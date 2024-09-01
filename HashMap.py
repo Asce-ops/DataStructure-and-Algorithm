@@ -268,7 +268,7 @@ class HashMapChaining:
     
     def keys(self) -> list[int]:
         '''查看所有键'''
-        result = [None] * self._size
+        result: list[int | None] = [None] * self._size
         idx = 0
         for i in range(self._capacity):
             cur = self._bucket[i]
@@ -280,7 +280,7 @@ class HashMapChaining:
     
     def values(self) -> list[str]:
         '''查看所有值'''
-        result = [None] * self._size
+        result: list[str | None] = [None] * self._size
         idx = 0
         for i in range(self._capacity):
             cur = self._bucket[i]
