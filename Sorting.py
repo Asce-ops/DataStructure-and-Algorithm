@@ -284,11 +284,11 @@ def bucket_sort(arr: list[int], k: int = 10, asc: bool = True) -> list[int]:
     maximum: int = arr[0]
     minimum: int = arr[0]
     '''原始数据归一化'''
-    for num in arr[1:]:
-        if num > maximum:
-            maximum = num
-        if num < minimum:
-            minimum = num
+    for i in range(1, len(arr)):
+        if arr[i] > maximum:
+            maximum = arr[i]
+        if arr[i] < minimum:
+            minimum = arr[i]
     buckets: list[list] = [[] for _ in range(k)] # 无法事先预知每个桶中会存放多少元素，需使用动态数组
     for num in arr:
         i: int = int(k * (num - minimum) / (maximum - minimum)) # [minimum, maximum] -> [0, 1] -> [0, k] -> range(k+1)
@@ -326,11 +326,11 @@ def counting_sort(arr: list[int]) -> list[int]:
     maximum: int = arr[0]
     minimum: int = arr[0]
     '''确定计数数组所需的容量'''
-    for num in arr[1:]:
-        if num > maximum:
-            maximum = num
-        if num < minimum:
-            minimum = num
+    for i in range(1, len(arr)):
+        if arr[i] > maximum:
+            maximum = arr[i]
+        if arr[i] < minimum:
+            minimum = arr[i]
     counter: list[int] = [0] * (maximum - minimum + 1)
     '''统计各个元素出现的次数'''
     for num in arr:
@@ -383,11 +383,11 @@ def radix_sort(arr: list[int], d: int = 10) -> list[int]:
     '''确定最大位数'''
     maximum: int = arr[0]
     minimum: int = arr[0]
-    for num in arr[1:]:
-        if num > maximum:
-            maximum = num
-        if num < minimum:
-            minimum = num
+    for i in range(1, n):
+        if arr[i] > maximum:
+            maximum = arr[i]
+        if arr[i] < minimum:
+            minimum = arr[i]
     if minimum < 0: # 存在负整数则将所有元素在相对大小不变的情况下转换为非负整数
         arr: list[int] = arr.copy()
         for i in range(n):
