@@ -13,6 +13,7 @@ from Array import DynamicArray
 from LinkedList import LinkedList
 
 
+
 '''初始化一个迷宫'''
 maze = [ # 0 表示不可走，1 表示可走，2 表示出口
     [1, 0, 1, 1, 1],

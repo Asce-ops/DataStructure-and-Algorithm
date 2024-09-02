@@ -7,22 +7,6 @@ class ListNode:
         self._val: int = val # 节点实际存储的数据
         self._next: ListNode | None = None # 指向下一个节点的引用
 
-    # def GetValue(self) -> int:
-    #     '''获取节点值'''
-    #     return self._val
-    
-    # def SetValue(self, val: int) -> None:
-    #     '''修改节点值'''
-    #     self._val = val
-    
-    # def GetNext(self) -> ListNode | None:
-    #     '''获取节点的下一个指向'''
-    #     return self._next
-    
-    # def SetNext(self, node: ListNode | None) -> None:
-    #     '''修改节点的下一个指向'''
-    #     self._next = node
-
 class LinkedList:
     '''链表'''
     def __init__(self) -> None:
