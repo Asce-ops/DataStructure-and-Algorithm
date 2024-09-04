@@ -7,7 +7,7 @@ class MaxHeap:
             self._capacity: int = 10 # 容量
             self._heap: list[int | None] = [None] * self._capacity
             self._size: int = 0
-        else: # 堆化现有数组
+        else: # 堆化现有数组（非原地）
             self._capacity: int = len(data)
             self._heap: list[int | None] = [None] * self._capacity
             self._size: int = self._capacity
@@ -155,7 +155,7 @@ class MaxPriorityQueue:
             self._capacity: int = 10 # 容量
             self._heap: list[Pair | None] = [None] * self._capacity
             self._size: int = 0
-        else: # 堆化现有数组
+        else: # 堆化现有数组（非原地）
             self._capacity: int = len(data)
             self._heap: list[Pair | None] = [None] * self._capacity
             self._size: int = self._capacity
