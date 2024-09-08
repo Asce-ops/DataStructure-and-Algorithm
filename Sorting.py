@@ -94,32 +94,40 @@ def insertion_sort(arr: list[int], asc: bool = True) -> None:
                 arr[base], arr[base - 1] = arr[base - 1], arr[base]
                 base -= 1
 
-
-
-def shell_sort(arr: list[int]) -> None:
+def shell_sort(arr: list[int], asc: bool = True) -> None:
     '''
     希尔排序
+    1. 将数组分为若干个子组，对每个子组进行插入排序（让数组变得部分有序）
+    2. 更新子组的划分，重复步骤 1（子组的个数必须严格单调递减且最终为1）
     '''
-    k = 3 # 第一次分组时每组最多包含的元素个数
-    n = len(arr)
-    interval = int(n / k) # 步长同时也是子列表的个数
-    while interval > 0: # 将列表变为“几乎排好序的状态”
-        for i in range(interval, n): # 所有子表未排序部分
-            cur_index = i
-            while cur_index - interval >= 0 and arr[cur_index - interval] > arr[cur_index]:
-                arr[cur_index], arr[cur_index - interval] = arr[cur_index - interval], arr[cur_index]
-                cur_index -= interval
-        interval = int(interval / 3) # int函数会向下取整
-    insertion_sort(arr=arr) # 对“几乎排好序”的列表进行插入排序
+    n: int = len(arr)
+    k: int = n // 2 # 组数，前 k 个数作为个组的起点，每隔 k 个数将其作为一组
+    while k > 1:
+        if asc: # 升序排序
+            for i in range(k, n): # 所有组中未排序的部分
+                '''对各个组进行插入排序'''
+                cur_index: int = i
+                while cur_index - k >= 0 and arr[cur_index - k] > arr[cur_index]: # cur_index - interval 是组中有序部分的最后一个元素
+                    arr[cur_index], arr[cur_index - k] = arr[cur_index - k], arr[cur_index]
+                    cur_index -= k
+        else: # 降序排序
+            for i in range(k, n): # 所有组中未排序的部分
+                '''对各个组进行插入排序'''
+                cur_index: int = i
+                while cur_index - k >= 0 and arr[cur_index - k] < arr[cur_index]: # cur_index - interval 是组中有序部分的最后一个元素
+                    arr[cur_index], arr[cur_index - k] = arr[cur_index - k], arr[cur_index]
+                    cur_index -= k
+        k //= 2
+    insertion_sort(arr=arr, asc=asc)
 
 
 
 def merge(arr: list[int], left: int, mid: int, right: int, asc: bool) -> None:
-    '''并归排序的辅助函数，用于合并有序的左子数组和右子数组'''
+    '''归并排序的辅助函数，用于合并有序的左子数组和右子数组'''
     tmp: list[int | None] = [0] * (right - left + 1) # 创建一个临时数组 tmp ，用于存放合并后的结果
     i, j, k = left, mid + 1, 0 # 初始化左子数组、右子数组和临时数组的起始索引
     if asc: # 升序排序
-        while (i <= mid) and (j <= right): # 比较左子数组和右子数组中最小的元素
+        while (i <= mid) and (j <= right): # 比较左子数组和右子数组中各自最小的元素
             if arr[i] <= arr[j]:
                 tmp[k] = arr[i]
                 i += 1
@@ -128,7 +136,7 @@ def merge(arr: list[int], left: int, mid: int, right: int, asc: bool) -> None:
                 j += 1
             k += 1
     else: # 降序排序
-        while (i <= mid) and (j <= right): # 比较左子数组和右子数组中最大的元素
+        while (i <= mid) and (j <= right): # 比较左子数组和右子数组中各自最大的元素
             if arr[i] >= arr[j]:
                 tmp[k] = arr[i]
                 i += 1
@@ -145,13 +153,13 @@ def merge(arr: list[int], left: int, mid: int, right: int, asc: bool) -> None:
         tmp[k] = arr[j]
         j += 1
         k += 1
-    '''将临时数组 tmp 中的元素复制回原数组 arr 的对应区间'''
+    '''将临时数组 tmp 中的元素复制回原数组 arr 的对应区间（归并排序是非原地排序）'''
     for k in range(len(tmp)):
         arr[left + k] = tmp[k]
 
 def merge_sort(arr: list[int], left: int, right: int, asc: bool = True) -> None:
     '''
-    并归排序
+    归并排序
     1. 划分阶段：通过递归不断地将数组从中点处分开，将长数组的排序问题转换为短数组的排序问题；
     2. 合并阶段：当子数组长度为 1 时终止划分，开始合并，持续地将左右两个较短的有序数组合并为一个较长的有序数组，直至结束。
     '''
@@ -159,10 +167,10 @@ def merge_sort(arr: list[int], left: int, right: int, asc: bool = True) -> None:
         return
     '''划分阶段'''
     mid = (left + right) // 2 # 计算中点
-    merge_sort(arr=arr, left=left, right=mid) # 递归左子数组
-    merge_sort(arr=arr, left=mid+1, right=right) # 递归右子数组
+    merge_sort(arr=arr, left=left, right=mid, asc=asc) # 递归左子数组
+    merge_sort(arr=arr, left=mid+1, right=right, asc=asc) # 递归右子数组
     '''合并阶段'''
-    merge(arr=arr, left=left, right=right, asc=asc)
+    merge(arr=arr, left=left, mid=mid, right=right, asc=asc)
 
 
 
@@ -274,6 +282,7 @@ def heap_sort(arr: list[int], asc: bool = True) -> None:
         sift_down(idx=0, n=i) # 重新将堆顶下沉至合适位置
 
 
+
 def bucket_sort(arr: list[int], k: int = 10, asc: bool = True) -> list[int]:
     '''
     桶排序
@@ -289,7 +298,7 @@ def bucket_sort(arr: list[int], k: int = 10, asc: bool = True) -> list[int]:
             maximum = arr[i]
         if arr[i] < minimum:
             minimum = arr[i]
-    buckets: list[list] = [[] for _ in range(k)] # 无法事先预知每个桶中会存放多少元素，需使用动态数组
+    buckets: list[list] = [[] for _ in range(k)] # 无法事先预知每个桶中会存放多少元素，需使用动态数组（自定义的 DynamicArray 类没有实现 sort 方法，用列表来代替）
     for num in arr:
         i: int = int(k * (num - minimum) / (maximum - minimum)) # [minimum, maximum] -> [0, 1] -> [0, k] -> range(k+1)
         '''添加进对应桶'''
@@ -315,7 +324,7 @@ def bucket_sort(arr: list[int], k: int = 10, asc: bool = True) -> list[int]:
         
 
 
-def counting_sort(arr: list[int]) -> list[int]:
+def counting_sort(arr: list[int], asc: bool = True) -> list[int]:
     '''
     计数排序
     1. 遍历待排序数组，找出其中最大元素 maximum 和最小元素 minimum，然后创建一个长度为 maximum - minimum + 1 的计数数组 counter；
@@ -332,24 +341,27 @@ def counting_sort(arr: list[int]) -> list[int]:
         if arr[i] < minimum:
             minimum = arr[i]
     counter: list[int] = [0] * (maximum - minimum + 1)
-    '''统计各个元素出现的次数'''
-    for num in arr:
+    for num in arr: # 统计各个元素出现的次数
         counter[num - minimum] += 1
-    '''求 counter 的前缀和，将“出现次数”转换为“尾索引”'''
-    for i in range(maximum - minimum):
-        counter[i + 1] += counter[i]
     n: int = len(arr)
-    result = [None] * n
-    '''counter[num - minimum] - 1 是 num 在 arr 中最后一次出现的索引（确保相同元素的相对顺序不变）'''
-    for i in range(n - 1, -1, -1):
+    result: list[int | None] = [None] * n
+    if asc: # 升序排序
+        '''求 counter 的前缀和，将“出现次数”转换为“尾索引”'''
+        for i in range(maximum - minimum):
+            counter[i + 1] += counter[i]
+        '''counter[num - minimum] - 1 是 num 应在有序数组中最后一次出现的索引'''
+    else: # 倒序排序
+        for i in range(maximum - minimum, 0, -1):
+            counter[i - 1] += counter[i]
+    for i in range(n - 1, -1, -1): # 倒序遍历以确保相同元素的相对顺序不变
         num = arr[i]
         result[counter[num - minimum] - 1] = num # 将 num 放置到对应索引处
         counter[num - minimum] -= 1 # 令前缀和自减 1，得到下次放置 num 的索引
     return result
 
-    
 
-def radix_sort(arr: list[int], d: int = 10) -> list[int]:
+
+def radix_sort(arr: list[int], d: int = 10, asc: bool = True) -> list[int]:
     '''
     基数排序
     1. 初始化位数 k = 1；
@@ -366,15 +378,19 @@ def radix_sort(arr: list[int], d: int = 10) -> list[int]:
         如果第 k 位相等，则元素的相对位置不变（由第 k-1 位决定）
         '''
         counter: list[int] = [0] * d # d 进制的范围是0~d-1，因此需要容量为 d 的计数数组
+        result: list[int | None] = [None] * n
         '''统计 d 进制中各个数字出现的次数'''
         for num in arr:
             x: int = digit(num=num, k=k)
             counter[x] += 1
-        '''求 counter 的前缀和，将“出现次数”转换为“尾索引”'''
-        for i in range(d - 1):
-            counter[i + 1] += counter[i]
-        result = [None] * n
-        for i in range(n - 1, -1, -1):
+        if asc: # 升序排序
+            '''求 counter 的前缀和，将“出现次数”转换为“尾索引”'''
+            for i in range(d - 1):
+                counter[i + 1] += counter[i]
+        else: # 降序排序
+            for i in range(d - 1, 0, -1):
+                counter[i - 1] += counter[i]
+        for i in range(n - 1, -1, -1): # 倒序遍历以确保相同元素的相对顺序不变
             num = arr[i]
             x: int = digit(num=num, k=k)
             result[counter[x] - 1] = num # 将 num 放置到对应索引处
@@ -398,7 +414,7 @@ def radix_sort(arr: list[int], d: int = 10) -> list[int]:
     if maximum == 0: # 说明数组全为 0
         return arr
     result: list[int] = arr
-    '''为什么从最低位开始排序，后一轮排序会覆盖前一轮排序的结果'''
+    '''因为高位数比低位数更能决定排序结果，所以从最低位开始排序，让后一轮排序能覆盖前一轮排序的结果'''
     while exp <= maximum:
         result = counter_sort_digit(arr=result, k=k)
         k += 1
@@ -411,11 +427,100 @@ def radix_sort(arr: list[int], d: int = 10) -> list[int]:
 
 
 if __name__ == '__main__':
-    import random
-    arr: list[int] = [random.randrange(start=0, stop=100) for _ in range(1000)]
-    result: list[int] = bucket_sort(arr=arr)
-    result2: list[int] = sorted(arr)
-    if result == result2:
-        print('True')
+    from random import randrange
+    from time import time
+    start: float = time()
+    arr: list[int] = [randrange(start=0, stop=1000) for _ in range(10000)]
+    short_bubble_sort(arr=arr, asc=False)
+    end: float = time()
+    result: list[int] = sorted(arr, reverse=True)
+    if result == arr:
+        print(f'True，冒泡排序耗时{end - start}')
     else:
-        print('False')
+        print('False，冒泡排序错误')
+    start: float = time()
+    arr: list[int] = [randrange(start=0, stop=1000) for _ in range(10000)]
+    selection_sort(arr=arr, asc=False)
+    end: float = time()
+    result: list[int] = sorted(arr, reverse=True)
+    if result == arr:
+        print(f'True，选择排序耗时{end - start}')
+    else:
+        print('False，选择排序错误')
+    start: float = time()
+    arr: list[int] = [randrange(start=0, stop=1000) for _ in range(10000)]
+    insertion_sort(arr=arr, asc=False)
+    end: float = time()
+    result: list[int] = sorted(arr, reverse=True)
+    if result == arr:
+        print(f'True，插入排序耗时{end - start}')
+    else:
+        print('False，插入排序错误')
+    start: float = time()
+    arr: list[int] = [randrange(start=0, stop=1000) for _ in range(10000)]
+    shell_sort(arr=arr, asc=False)
+    end: float = time()
+    result: list[int] = sorted(arr, reverse=True)
+    if result == arr:
+        print(f'True，希尔排序耗时{end - start}')
+    else:
+        print('False，希尔排序错误')
+    start: float = time()
+    arr: list[int] = [randrange(start=0, stop=1000) for _ in range(10000)]
+    merge_sort(arr=arr, asc=False, left=0, right=len(arr)-1)
+    end: float = time()
+    result: list[int] = sorted(arr, reverse=True)
+    if result == arr:
+        print(f'True，归并排序耗时{end - start}')
+    else:
+        print('False，归并排序错误')
+    start: float = time()
+    arr: list[int] = [randrange(start=0, stop=1000) for _ in range(10000)]
+    quick_sort(arr=arr, asc=False, left=0, right=len(arr)-1)
+    end: float = time()
+    result: list[int] = sorted(arr, reverse=True)
+    if result == arr:
+        print(f'True，快速排序耗时{end - start}')
+    else:
+        print('False，快速排序错误')
+    start: float = time()
+    arr: list[int] = [randrange(start=0, stop=1000) for _ in range(10000)]
+    heap_sort(arr=arr, asc=False)
+    end: float = time()
+    result: list[int] = sorted(arr, reverse=True)
+    if result == arr:
+        print(f'True，堆排序耗时{end - start}')
+    else:
+        print('False，堆排序错误')
+    start: float = time()
+    arr: list[int] = [randrange(start=0, stop=1000) for _ in range(10000)]
+    result2: list[int] = bucket_sort(arr=arr, asc=False)
+    end: float = time()
+    result: list[int] = sorted(arr, reverse=True)
+    if result == result2:
+        print(f'True，桶排序耗时{end - start}')
+    else:
+        print('False，桶排序错误')
+    start: float = time()
+    arr: list[int] = [randrange(start=0, stop=1000) for _ in range(10000)]
+    result2: list[int] = counting_sort(arr=arr, asc=False)
+    end: float = time()
+    result: list[int] = sorted(arr, reverse=True)
+    if result == result2:
+        print(f'True，计数排序耗时{end - start}')
+    else:
+        print('False，计数排序错误')
+    start: float = time()
+    arr: list[int] = [randrange(start=0, stop=1000) for _ in range(10000)]
+    result2: list[int] = radix_sort(arr=arr, asc=False)
+    end: float = time()
+    result: list[int] = sorted(arr, reverse=True)
+    if result == result2:
+        print(f'True，基数排序耗时{end - start}')
+    else:
+        print('False，基数排序错误')
+    start: float = time()
+    arr: list[int] = [randrange(start=0, stop=1000) for _ in range(10000)]
+    arr.sort(reverse=True)
+    end: float = time()
+    print(f'True，内置排序耗时{end - start}')
