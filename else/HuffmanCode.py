@@ -6,6 +6,7 @@ sys.path.append(str(Path(__file__).parent.parent)) # Path(__file__) 获取的当
 from Heap import MinPriorityQueue
 from HashMap import HashMapChaining
 from Stack import ArrayStack
+from Array import DynamicArray
 
 
 
@@ -29,32 +30,10 @@ class HuffmanTreeNode:
 
 
 
-class HuffmanHeap(MinPriorityQueue):
-    '''适用于哈夫曼树的小顶堆'''
-    def enqueue(self, node: HuffmanTreeNode) -> None:
-        '''入队'''
-        if self._size >= self._capacity: # 扩容
-            self._extend()
-        self._heap[self._size] = node
-        self._sift_up(idx=self._size) # 将尾部追加的节点上浮至合适位置
-        self._size += 1
-
-    def dequeue(self) -> HuffmanTreeNode:
-        '''出队'''
-        if self._size == 0:
-            raise IndexError('优先级队列为空')
-        result = self._heap[0]
-        self._heap[0] = self._heap[self._size - 1]
-        self._heap[self._size - 1] = None
-        self._size -= 1 # 因为下沉节点时需要引用堆的长度，务必先更新堆的长度再下沉节点
-        self._sift_down(idx=0) # 将交换后新的根节点下沉至合适位置
-        return result
-
-
-
 class HuffmanTree:
     '''哈夫曼树'''
     def __init__(self, text: str) -> None:
+        '''构造哈夫曼树'''
         self.map: HashMapChaining = HashMapChaining() # Unicode 编码到字符之间的映射
         self.counter : HashMapChaining = HashMapChaining() # 统计每个字符出现的次数
         for s in text:
@@ -64,8 +43,10 @@ class HuffmanTree:
                 self.counter[code] += 1
             except KeyError:
                 self.counter[code] = 1
-        self.leaves: list[HuffmanTreeNode] = [HuffmanTreeNode(name=self.map[i], weight=self.counter[i]) for i in self.counter]
-        self.min_priority_queue: HuffmanHeap = HuffmanHeap(data=self.leaves) # 字符按其出现次数进行比较构成的优先队列
+        self.leaves: DynamicArray[HuffmanTreeNode | None] = DynamicArray(capacity=len(self.counter))
+        for i in self.counter:
+            self.leaves.append(item=HuffmanTreeNode(name=self.map[i], weight=self.counter[i]))
+        self.min_priority_queue: MinPriorityQueue = MinPriorityQueue(data=self.leaves) # 字符按其出现次数进行比较构成的优先队列
         '''权重越小的字符离根节点越远，其对应的哈夫曼编码也就越长'''
         while len(self.min_priority_queue) != 1:
             left_node: HuffmanTreeNode = self.min_priority_queue.dequeue()
@@ -73,7 +54,7 @@ class HuffmanTree:
             parent_node: HuffmanTreeNode = HuffmanTreeNode(weight=left_node.val+right_node.val)
             left_node.parent = right_node.parent = parent_node
             parent_node.left_child, parent_node.right_child = left_node, right_node
-            self.min_priority_queue.enqueue(node=parent_node)
+            self.min_priority_queue.enqueue(item=parent_node)
     
     def get_code(self, char: str) -> str:
         '''获取单个字符的哈夫曼编码'''
@@ -99,4 +80,3 @@ if __name__ == '__main__':
     h: HuffmanTree = HuffmanTree(text=text)
     for i in set(text):
         print(i, h.get_code(char=i))
-    

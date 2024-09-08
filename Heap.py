@@ -178,16 +178,15 @@ class MaxPriorityQueue:
         for i in range(self._size):
             self._heap[i] = tmp[i]
 
-    def enqueue(self, key: str, val: int) -> None:
+    def enqueue(self, item: Pair) -> None:
         '''入队'''
         if self._size >= self._capacity: # 扩容
             self._extend()
-        item: Pair = Pair(key=key, val=val)
         self._heap[self._size] = item
         self._sift_up(idx=self._size) # 将尾部追加的节点上浮至合适位置
         self._size += 1
 
-    def dequeue(self) -> tuple[str, int]:
+    def dequeue(self) -> Pair:
         '''出队'''
         if self._size == 0:
             raise IndexError('优先级队列为空')
@@ -196,13 +195,13 @@ class MaxPriorityQueue:
         self._heap[self._size - 1] = None
         self._size -= 1 # 因为下沉节点时需要引用堆的长度，务必先更新堆的长度再下沉节点
         self._sift_down(idx=0) # 将交换后新的根节点下沉至合适位置
-        return (result.key, result.val)
+        return result
     
-    def peek(self) -> tuple[str, int]:
+    def peek(self) -> Pair:
         '''查看队首元素'''
         if self._size == 0:
             raise IndexError('优先级队列为空')
-        return (self._heap[0].key, self._heap[0].val)
+        return self._heap[0]
     
     def _sift_up(self, idx: int) -> None:
         '''上浮节点'''
@@ -272,7 +271,7 @@ if __name__ == '__main__':
     print(result)
     result2 = TopK(data=data, k=5, minimum=False)
     print(result2)
-    h: MaxHeap = MinHeap(data=data)
+    h: MinHeap = MinHeap(data=data)
     print(h._heap)
     for _ in range(len(data)):
         print(h.pop())
@@ -283,13 +282,18 @@ if __name__ == '__main__':
     print(data)
     minph = MinPriorityQueue()
     for i in data:
-        minph.enqueue(key=str(i), val=i)
+        minph.enqueue(item=Pair(key=str(i), val=i))
+    print('大小为', len(minph))
     print([i.key for i in minph._heap if i is not None])
     print([i.val for i in minph._heap if i is not None])
+    i: int = 0
     for _ in range(len(data)):
-        print(minph.dequeue())
+        i += 1
+        tmp: Pair = minph.dequeue()
+        print(f'第{i}个出队', tmp.key, tmp.key)
     l = [Pair(key=str(i), val=i) for i in range(15)]
     h3 = MinPriorityQueue(data=l)
     print('-------------')
     for _ in range(len(h3)):
-        print(h3.dequeue())
+        tmp: Pair = h3.dequeue()
+        print(tmp.key, tmp.key)
