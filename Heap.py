@@ -140,9 +140,9 @@ def TopK(data: list[int], k: int, minimum: bool = True):
 '''优先级队列'''
 class Pair:
     '''键值对'''
-    def __init__(self, key: str, val: int) -> None:
-        self.key: str = key
-        self.val: int = val # 用于进行比较的属性
+    def __init__(self, obj: str, attr: int) -> None:
+        self.obj: str = obj
+        self.attr: int = attr # 用于进行比较的属性
 
 
 
@@ -207,7 +207,7 @@ class MaxPriorityQueue:
         '''上浮节点'''
         while idx > 0: # 根节点无需再上浮
             parent = (idx - 1) // 2 # 父节点的索引
-            if self._heap[parent].val >= self._heap[idx].val: # 无需再修复节点
+            if self._heap[parent].attr >= self._heap[idx].attr: # 无需再修复节点
                 break
             self._heap[parent], self._heap[idx] = self._heap[idx], self._heap[parent] # 修复节点
             idx = parent
@@ -218,10 +218,10 @@ class MaxPriorityQueue:
             left = 2 * idx + 1 # 左子节点的索引
             if left < self._size: # 存在子节点（叶子节点无需再下沉）
                 maximum: int = idx # 记录当前节点和其子节点中的最大节点
-                if self._heap[left].val > self._heap[idx].val:
+                if self._heap[left].attr > self._heap[idx].attr:
                     maximum = left
                 right = 2 * idx + 2 # 右子节点的索引
-                if (right < self._size) and (self._heap[right].val > self._heap[maximum].val):
+                if (right < self._size) and (self._heap[right].attr > self._heap[maximum].attr):
                     maximum = right
                 if maximum != idx: # 需要修复节点
                     self._heap[idx], self._heap[maximum] = self._heap[maximum], self._heap[idx]
@@ -240,7 +240,7 @@ class MinPriorityQueue(MaxPriorityQueue):
         '''上浮节点'''
         while idx > 0: # 根节点无需再上浮
             parent = (idx - 1) // 2 # 父节点的索引
-            if self._heap[parent].val <= self._heap[idx].val: # 无需再修复节点
+            if self._heap[parent].attr <= self._heap[idx].attr: # 无需再修复节点
                 break
             self._heap[parent], self._heap[idx] = self._heap[idx], self._heap[parent] # 修复节点
             idx = parent
@@ -251,10 +251,10 @@ class MinPriorityQueue(MaxPriorityQueue):
             left = 2 * idx + 1 # 左子节点的索引
             if left < self._size: # 存在子节点（叶子节点无需再下沉）
                 minimum: int = idx # 记录当前节点和其子节点中的最小节点
-                if self._heap[left].val < self._heap[idx].val:
+                if self._heap[left].attr < self._heap[idx].attr:
                     minimum = left
                 right = 2 * idx + 2 # 右子节点的索引
-                if (right < self._size) and (self._heap[right].val < self._heap[minimum].val):
+                if (right < self._size) and (self._heap[right].attr < self._heap[minimum].attr):
                     minimum = right
                 if minimum != idx: # 需要修复节点
                     self._heap[idx], self._heap[minimum] = self._heap[minimum], self._heap[idx]
@@ -282,18 +282,18 @@ if __name__ == '__main__':
     print(data)
     minph = MinPriorityQueue()
     for i in data:
-        minph.enqueue(item=Pair(key=str(i), val=i))
+        minph.enqueue(item=Pair(obj=str(i), attr=i))
     print('大小为', len(minph))
-    print([i.key for i in minph._heap if i is not None])
-    print([i.val for i in minph._heap if i is not None])
+    print([i.obj for i in minph._heap if i is not None])
+    print([i.attr for i in minph._heap if i is not None])
     i: int = 0
     for _ in range(len(data)):
         i += 1
         tmp: Pair = minph.dequeue()
-        print(f'第{i}个出队', tmp.key, tmp.key)
-    l = [Pair(key=str(i), val=i) for i in range(15)]
+        print(f'第{i}个出队', tmp.obj, tmp.attr)
+    l = [Pair(obj=str(i), attr=i) for i in range(15)]
     h3 = MinPriorityQueue(data=l)
     print('-------------')
     for _ in range(len(h3)):
         tmp: Pair = h3.dequeue()
-        print(tmp.key, tmp.key)
+        print(tmp.obj, tmp.attr)

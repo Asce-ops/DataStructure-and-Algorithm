@@ -13,9 +13,9 @@ from Array import DynamicArray
 class HuffmanTreeNode:
     '''哈夫曼树的节点'''
     def __init__(self, name: str = None, weight: int = None) -> None:
-        '''拥有 key 和 val 属性的对象即可用于构建 MinPriorityQueue'''
-        self.key: str = name # 节点的名字编号
-        self.val: int = weight # 节点的权重
+        '''拥有 obj 和 attr 属性的对象即可用于构建 MinPriorityQueue'''
+        self.obj: str = name # 节点的名字编号
+        self.attr: int = weight # 节点的权重
         self.left_child: HuffmanTreeNode | None = None # 左子节点
         self.right_child: HuffmanTreeNode | None = None # 右子节点
         self.parent: HuffmanTreeNode | None = None # 父节点
@@ -51,7 +51,7 @@ class HuffmanTree:
         while len(self.min_priority_queue) != 1:
             left_node: HuffmanTreeNode = self.min_priority_queue.dequeue()
             right_node: HuffmanTreeNode = self.min_priority_queue.dequeue()
-            parent_node: HuffmanTreeNode = HuffmanTreeNode(weight=left_node.val+right_node.val)
+            parent_node: HuffmanTreeNode = HuffmanTreeNode(weight=left_node.attr+right_node.attr)
             left_node.parent = right_node.parent = parent_node
             parent_node.left_child, parent_node.right_child = left_node, right_node
             self.min_priority_queue.enqueue(item=parent_node)
@@ -59,7 +59,7 @@ class HuffmanTree:
     def get_code(self, char: str) -> str:
         '''获取单个字符的哈夫曼编码'''
         for leaf in self.leaves:
-            if leaf.key == char:
+            if leaf.obj == char:
                 stack: ArrayStack = ArrayStack()
                 while leaf.parent is not None:
                     if leaf.is_left_child():
