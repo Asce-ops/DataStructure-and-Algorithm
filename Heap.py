@@ -11,10 +11,10 @@ class MaxHeap:
             self._capacity: int = len(data)
             self._heap: list[int | None] = [None] * self._capacity
             self._size: int = self._capacity
-            last_leaf = (self._size - 2) // 2 # 最后一个非叶子节点（有可能等于-1）
-            for i in range(last_leaf + 1, self._size):
+            last_not_leaf = (self._size - 2) // 2 # 最后一个非叶子节点（有可能等于-1）
+            for i in range(last_not_leaf + 1, self._size):
                 self._heap[i] = data[i]
-            for i in range(last_leaf, -1, -1):
+            for i in range(last_not_leaf, -1, -1):
                 '''
                 倒序遍历数组（层序遍历的倒序），依次对每个非叶节点执行“从顶至底堆化”；
                 每当堆化一个节点后，以该节点为根节点的子树就形成一个合法的子堆。
@@ -159,10 +159,10 @@ class MaxPriorityQueue:
             self._capacity: int = len(data)
             self._heap: list[Pair | None] = [None] * self._capacity
             self._size: int = self._capacity
-            last_leaf = (self._size - 2) // 2 # 最后一个非叶子节点（有可能等于-1）
-            for i in range(last_leaf + 1, self._size):
+            last_not_leaf = (self._size - 2) // 2 # 最后一个非叶子节点（有可能等于-1）
+            for i in range(last_not_leaf + 1, self._size):
                 self._heap[i] = data[i]
-            for i in range(last_leaf, -1, -1):
+            for i in range(last_not_leaf, -1, -1):
                 '''
                 倒序遍历数组（层序遍历的倒序），依次对每个非叶节点执行“从顶至底堆化”；
                 每当堆化一个节点后，以该节点为根节点的子树就形成一个合法的子堆。
@@ -266,34 +266,36 @@ class MinPriorityQueue(MaxPriorityQueue):
 
 
 if __name__ == '__main__':
-    data = [9, 8, 6, 6, 7, 5, 2, 1, 4, 3, 6, 2]
-    result = TopK(data=data, k=5)
-    print(result)
-    result2 = TopK(data=data, k=5, minimum=False)
-    print(result2)
-    h: MinHeap = MinHeap(data=data)
-    print(h._heap)
-    for _ in range(len(data)):
-        print(h.pop())
-    h2 = MaxHeap()
-    for i in range(15):
-        h2.push(val=i)
-    print(h2._heap)
-    print(data)
-    minph = MinPriorityQueue()
-    for i in data:
-        minph.enqueue(item=Pair(obj=str(i), attr=i))
-    print('大小为', len(minph))
-    print([i.obj for i in minph._heap if i is not None])
-    print([i.attr for i in minph._heap if i is not None])
-    i: int = 0
-    for _ in range(len(data)):
-        i += 1
-        tmp: Pair = minph.dequeue()
-        print(f'第{i}个出队', tmp.obj, tmp.attr)
-    l = [Pair(obj=str(i), attr=i) for i in range(15)]
-    h3 = MinPriorityQueue(data=l)
-    print('-------------')
-    for _ in range(len(h3)):
-        tmp: Pair = h3.dequeue()
-        print(tmp.obj, tmp.attr)
+    # data = [9, 8, 6, 6, 7, 5, 2, 1, 4, 3, 6, 2]
+    # result = TopK(data=data, k=5)
+    # print(result)
+    # result2 = TopK(data=data, k=5, minimum=False)
+    # print(result2)
+    # h: MinHeap = MinHeap(data=data)
+    # print(h._heap)
+    # for _ in range(len(data)):
+    #     print(h.pop())
+    # h2 = MaxHeap()
+    # for i in range(15):
+    #     h2.push(val=i)
+    # print(h2._heap)
+    # print(data)
+    # minph = MinPriorityQueue()
+    # for i in data:
+    #     minph.enqueue(item=Pair(obj=str(i), attr=i))
+    # print('大小为', len(minph))
+    # print([i.obj for i in minph._heap if i is not None])
+    # print([i.attr for i in minph._heap if i is not None])
+    # i: int = 0
+    # for _ in range(len(data)):
+    #     i += 1
+    #     tmp: Pair = minph.dequeue()
+    #     print(f'第{i}个出队', tmp.obj, tmp.attr)
+    # l = [Pair(obj=str(i), attr=i) for i in range(15)]
+    # h3 = MinPriorityQueue(data=l)
+    # print('-------------')
+    # for _ in range(len(h3)):
+    #     tmp: Pair = h3.dequeue()
+    #     print(tmp.obj, tmp.attr)
+    arr: list[int] = [3,2,3,1,2,4,5,5,6]
+    print(TopK(data=arr, k=4, minimum=False))

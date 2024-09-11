@@ -338,6 +338,7 @@ if __name__ == '__main__':
         h1.put(key=i, val=str(i))
         h2.put(key=i, val=str(i))
     del h1[3]
+    del h1[3]
     print('开始遍历h1')
     for i in h1:
         print(i)

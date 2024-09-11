@@ -273,9 +273,9 @@ def heap_sort(arr: list[int], asc: bool = True) -> None:
                         idx = minimum
                         continue
                 break # 无需修复节点
-    last_leaf = (N - 2) // 2 # 最后一个非叶子节点（有可能等于-1）
+    last_not_leaf = (N - 2) // 2 # 最后一个非叶子节点（有可能等于-1）
     '''堆化（倒序遍历将每个元素下沉至合适位置）'''
-    for i in range(last_leaf, -1, -1):
+    for i in range(last_not_leaf, -1, -1):
         sift_down(idx=i, n=N)
     for i in range(N - 1, 0, -1):
         arr[0], arr[i] = arr[i], arr[0] # 交换堆顶与堆的最右叶子结点
