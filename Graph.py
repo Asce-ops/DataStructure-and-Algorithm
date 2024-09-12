@@ -119,8 +119,11 @@ from Array import DynamicArray
 from sys import maxsize
 from LinkedList import LinkedList
 from copy import deepcopy
+from UnionFindSet import UnionFindSet
 
 
+
+# 不重不漏地访问图中的所有顶点
 def graph_bfs(graph: Graph, start_vertex: int) -> DynamicArray:
     '''广度优先遍历'''
     if start_vertex not in graph:
@@ -139,6 +142,7 @@ def graph_bfs(graph: Graph, start_vertex: int) -> DynamicArray:
                 visited.put(key=i, val=None)
     return result
 
+
 def graph_dfs(graph: Graph, start_vertex: int) -> DynamicArray:
     '''深度优先遍历'''
     if start_vertex not in graph:
@@ -156,8 +160,9 @@ def graph_dfs(graph: Graph, start_vertex: int) -> DynamicArray:
 
 
 
+# 最短路径
 def dijkstra(graph: Graph, start_vertex: int) -> tuple[HashMap, HashMap]:
-    '''Dijkstra 算法确定非负加权图的单源最短路径'''
+    '''迪杰斯特拉算法确定非负加权图的单源最短路径'''
     unvisited_vertexs: HashMap = HashMap()
     for vertex in graph.vertexs:
         '''初始化所有节点距离为无穷大'''
@@ -183,8 +188,20 @@ def dijkstra(graph: Graph, start_vertex: int) -> tuple[HashMap, HashMap]:
 
 
 
+def floyd(graph: Graph, from_vertex: int, to_vertex: int) -> tuple[int, LinkedList]:
+    '''弗洛伊德算法确定多源最短路径'''
+    pass
+
+
+
+# 最小生成树：连通图（任意顶点 v 到顶点 w 之间都存在路径）中的一个子图，使得所有顶点都相互连通，且总边权和最小
 def prim(graph: Graph) -> Graph:
-    '''prim 算法最小生成树'''
+    '''
+    普里姆算法最小生成树：
+    1. 首先选择一个起始节点，以这个节点将图分成两个集合。一个已选集合，一个未选集合，把起始节点加入已选集合；
+    2. 从未选节点集合中选择距离已选节点集合最近的节点，并将其加入已选节点集合；
+    3. 不断重复步骤 2，直到所有节点都被加入到已选节点集合中，形成最小生成树。
+    '''
     selected: HashMap = HashMap() # 模拟集合，{vertex}
     first_vertex: int = next(iter(graph.vertexs))
     selected.put(key=first_vertex, val=None) # 从第一个顶点开始
@@ -211,15 +228,50 @@ def prim(graph: Graph) -> Graph:
     minimum_spanning_tree: Graph = Graph()
     for edge in used_edges:
         minimum_spanning_tree.set_edge(from_vertex=edge[0], to_vertex=edge[1], weight=edge[2])
+        minimum_spanning_tree.set_edge(from_vertex=edge[1], to_vertex=edge[0], weight=edge[2])
+    return minimum_spanning_tree
+
+
+
+def kruskal(graph: Graph) -> Graph:
+    '''
+    克鲁斯卡尔算法最小生成树：
+    取出所有的边，按其权值从小到大的顺序排列，
+    然后不断取出权值最小的边放入图中，一共取顶点数减 1 条边。
+    但是每次放入一条边都要判断是否形成了环；
+    如果没有形成环，则将该边纳入最小生成树中，
+    如果形成了环，则舍弃这条边，继续取下一条边。
+    '''
+    used_edges: LinkedList = LinkedList() # 用于组成最小生成树的边
+    ufs: UnionFindSet = UnionFindSet(arr=graph.vertexs.keys()) # 初始化并查集
+    '''获取所有的边'''
+    edges: list[tuple[int, int, int] | None] = [None] * graph.size()
+    idx: int = 0
+    for from_vertex in graph.vertexs:
+        to_edges: HashMap = graph[from_vertex].get_to_edges()
+        for to_vertex in to_edges:
+            edges[idx] = (from_vertex, to_vertex, to_edges[to_vertex])
+            idx += 1
+    edges.sort(key=lambda edge: edge[2], reverse=True) # 将所有的边按照权重降序排序
+    while len(used_edges) < len(graph) - 1:
+        from_vertex, to_vertex, weight = edges.pop()
+        if not ufs.is_relative(node1=from_vertex, node2=to_vertex): # from_vertex 和 to_vertex 是否已经连通
+            ufs.union(node1=from_vertex, node2=to_vertex)
+            used_edges.append(val=(from_vertex, to_vertex, weight))
+    '''利用组成最小生成树的边构建一个子图'''
+    minimum_spanning_tree: Graph = Graph()
+    for edge in used_edges:
+        minimum_spanning_tree.set_edge(from_vertex=edge[0], to_vertex=edge[1], weight=edge[2])
+        minimum_spanning_tree.set_edge(from_vertex=edge[1], to_vertex=edge[0], weight=edge[2])
     return minimum_spanning_tree
 
 
 
 def topological_sorting(graph: Graph) -> LinkedList:
     '''
-    拓扑排序是一个有向无环图的所有顶点的线性序列，并满足以下两个条件：
-    1. 每个顶点出现且只出现一次。
-    2. 若存在一条从顶点 A 到顶点 B 的路径，那么在序列中顶点 A 出现在顶点 B 的前面。
+    拓扑排序是一个有向无环图（环是一条只有第一个和最后一个顶点重复的非空路径）的所有顶点的线性序列，并满足以下两个条件：
+    1. 每个顶点出现且只出现一次；
+    2. 若存在一条从顶点 A 到顶点 B 的路径，则在序列中顶点 A 出现在顶点 B 的前面。
     '''
     graph: Graph = deepcopy(graph)
     result: LinkedList = LinkedList()
@@ -310,5 +362,11 @@ if __name__ == '__main__':
     g3: Graph = prim(graph=g2)
     for i in g3.vertexs:
         to_edges: HashMap = g3[i].get_to_edges()
+        for j in to_edges:
+            print(i, j, to_edges[j])
+    print('-------克鲁斯卡尔算法-------')
+    g4: Graph = kruskal(graph=g2)
+    for i in g4.vertexs:
+        to_edges: HashMap = g4[i].get_to_edges()
         for j in to_edges:
             print(i, j, to_edges[j])
