@@ -27,7 +27,7 @@ if __name__ == '__main__':
     for i in range(n): # 初始化起点柱
         A.push(item=i)
 
-    print(f'3 根柱子的初始状态\n起点柱：{A.to_list()}， 中间柱：{B.to_list()}，终点柱：{C.to_list()}')
-    print('开始移动')
+    print(f'3 根柱子的初始状态：\n起点柱：{A.to_list()}， 中间柱：{B.to_list()}，终点柱：{C.to_list()}')
+    print('开始移动：')
     Hanota(n=len(A), from_pole=A, with_pole=B, to_pole=C)
-    print('结束移动')
+    print('结束移动。')

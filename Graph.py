@@ -116,10 +116,10 @@ class Graph:
 
 from Queue import ArrayQueue
 from Array import DynamicArray
-from sys import maxsize
 from LinkedList import LinkedList
 from copy import deepcopy
 from UnionFindSet import UnionFindSet
+from Stack import ArrayStack
 
 
 
@@ -166,7 +166,7 @@ def dijkstra(graph: Graph, start_vertex: int) -> tuple[HashMap, HashMap]:
     unvisited_vertexs: HashMap = HashMap()
     for vertex in graph.vertexs:
         '''初始化所有节点距离为无穷大'''
-        unvisited_vertexs[vertex] = maxsize
+        unvisited_vertexs[vertex] = float('inf')
     unvisited_vertexs[start_vertex] = 0 # 起始节点距离为0
     shortest_paths: HashMap = HashMap() # {vertex: LinkedList}
     shortest_distances: HashMap = HashMap() # {vertex: int}
@@ -188,9 +188,58 @@ def dijkstra(graph: Graph, start_vertex: int) -> tuple[HashMap, HashMap]:
 
 
 
-def floyd(graph: Graph, from_vertex: int, to_vertex: int) -> tuple[int, LinkedList]:
-    '''弗洛伊德算法确定多源最短路径'''
-    pass
+def weight_matrix(graph: Graph) -> list[list]:
+    '''返回图的距离矩阵'''
+    result: list[list] = [[float('inf')] * len(graph) for _ in range(len(graph))] # result[i][j] 为无穷表示不存在从 i 到 j 的边
+    for from_vertex in graph.vertexs:
+        result[from_vertex][from_vertex] = 0 # 没有自身到自身的边则设为 0
+        to_edges: HashMap = graph[from_vertex].get_to_edges()
+        for to_vertex in to_edges:
+            result[from_vertex][to_vertex] = to_edges[to_vertex]
+    return result
+
+def floyd(graph: Graph) -> list[tuple[tuple[int, int], int, LinkedList]]:
+    '''弗洛伊德算法确定非负加权图的多源最短路径'''
+    n: int = len(graph)
+    D: list[list] = weight_matrix(graph=graph) # D[i][j] 表示从 i 到 j 的最短距离
+    P: list[list] = [[None] * n for _ in range(n)] # P[i][j] 表示从 i 到 j 的最短路径中 j 的前一个顶点
+    for from_vertex in graph.vertexs:
+        to_edges: HashMap = graph[from_vertex].get_to_edges()
+        for to_vertex in to_edges:
+            P[from_vertex][to_vertex] = from_vertex
+    for middle_vertex in range(n): # 依次将每个顶点作为允许经过的点，更新最短路径
+        for from_vertex in range(n):
+            if from_vertex == middle_vertex:
+                continue
+            for to_vertex in range(n):
+                if (to_vertex == middle_vertex) or (to_vertex == from_vertex):
+                    continue
+                if D[from_vertex][middle_vertex] + D[middle_vertex][to_vertex] < D[from_vertex][to_vertex]:
+                    D[from_vertex][to_vertex] = D[from_vertex][middle_vertex] + D[middle_vertex][to_vertex]
+                    P[from_vertex][to_vertex] = P[middle_vertex][to_vertex]
+    '''返回任意两点间的最短距离和对应路径'''
+    result = [None] * n**2
+    idx: int = 0
+    for from_vertex in range(n):
+        for to_vertex in range(n):
+            path: LinkedList = LinkedList()
+            distance: int | float = D[from_vertex][to_vertex]
+            '''确定最短距离对应的路径'''
+            if (distance == 0) or (distance == float('inf')):
+                result[idx] = ((from_vertex, to_vertex), distance, path)
+            else:
+                stack: ArrayStack = ArrayStack() # 存储最短路径经过的每一个顶点
+                stack.push(item=to_vertex)
+                middle_vertex: int = P[from_vertex][to_vertex]
+                stack.push(item=middle_vertex)
+                while from_vertex != middle_vertex:
+                    middle_vertex = P[from_vertex][middle_vertex]
+                    stack.push(item=middle_vertex)
+                while len(stack) > 0:
+                    path.append(val=stack.pop())
+                    result[idx] = ((from_vertex, to_vertex), distance, path)
+            idx += 1
+    return result
 
 
 
@@ -209,7 +258,7 @@ def prim(graph: Graph) -> Graph:
     unselected.remove(first_vertex)
     used_edges: LinkedList = LinkedList() # 用于组成最小生成树的边
     while len(unselected) > 0:
-        minimum: int = maxsize
+        minimum: int = float('inf')
         from_vertex: int | None = None
         to_vertex: int | None = None
         '''从未选中部分找到距离已选中部分最近的顶点'''
@@ -323,6 +372,7 @@ if __name__ == '__main__':
     print(len(g), g.size())
     print('-------迪杰斯特拉算法-------')
     g2: Graph = Graph()
+    g2.add_vertex(vertex=0)
     g2.add_vertex(vertex=1)
     g2.add_vertex(vertex=2)
     g2.add_vertex(vertex=3)
@@ -330,34 +380,39 @@ if __name__ == '__main__':
     g2.add_vertex(vertex=5)
     g2.add_vertex(vertex=6)
     g2.add_vertex(vertex=7)
-    g2.add_vertex(vertex=8)
-    g2.set_edge(from_vertex=1, to_vertex=2, weight=2)
-    g2.set_edge(from_vertex=1, to_vertex=3, weight=9)
-    g2.set_edge(from_vertex=2, to_vertex=1, weight=2)
-    g2.set_edge(from_vertex=2, to_vertex=4, weight=4)
-    g2.set_edge(from_vertex=2, to_vertex=5, weight=8)
-    g2.set_edge(from_vertex=3, to_vertex=1, weight=9)
-    g2.set_edge(from_vertex=3, to_vertex=5, weight=10)
-    g2.set_edge(from_vertex=3, to_vertex=6, weight=3)
-    g2.set_edge(from_vertex=4, to_vertex=2, weight=4)
-    g2.set_edge(from_vertex=4, to_vertex=5, weight=1)
-    g2.set_edge(from_vertex=4, to_vertex=7, weight=5)
-    g2.set_edge(from_vertex=5, to_vertex=2, weight=8)
-    g2.set_edge(from_vertex=5, to_vertex=3, weight=10)
-    g2.set_edge(from_vertex=5, to_vertex=4, weight=1)
-    g2.set_edge(from_vertex=5, to_vertex=6, weight=11)
-    g2.set_edge(from_vertex=5, to_vertex=7, weight=6)
-    g2.set_edge(from_vertex=5, to_vertex=8, weight=12)
-    g2.set_edge(from_vertex=6, to_vertex=3, weight=3)
-    g2.set_edge(from_vertex=6, to_vertex=5, weight=11)
-    g2.set_edge(from_vertex=6, to_vertex=8, weight=17)
-    g2.set_edge(from_vertex=7, to_vertex=4, weight=5)
-    g2.set_edge(from_vertex=7, to_vertex=5, weight=6)
-    g2.set_edge(from_vertex=8, to_vertex=5, weight=12)
-    g2.set_edge(from_vertex=8, to_vertex=6, weight=17)
+    g2.set_edge(from_vertex=0, to_vertex=1, weight=2)
+    g2.set_edge(from_vertex=0, to_vertex=2, weight=9)
+    g2.set_edge(from_vertex=1, to_vertex=0, weight=2)
+    g2.set_edge(from_vertex=1, to_vertex=3, weight=4)
+    g2.set_edge(from_vertex=1, to_vertex=4, weight=8)
+    g2.set_edge(from_vertex=2, to_vertex=0, weight=9)
+    g2.set_edge(from_vertex=2, to_vertex=4, weight=10)
+    g2.set_edge(from_vertex=2, to_vertex=5, weight=3)
+    g2.set_edge(from_vertex=3, to_vertex=1, weight=4)
+    g2.set_edge(from_vertex=3, to_vertex=4, weight=1)
+    g2.set_edge(from_vertex=3, to_vertex=6, weight=5)
+    g2.set_edge(from_vertex=4, to_vertex=1, weight=8)
+    g2.set_edge(from_vertex=4, to_vertex=2, weight=10)
+    g2.set_edge(from_vertex=4, to_vertex=3, weight=1)
+    g2.set_edge(from_vertex=4, to_vertex=5, weight=11)
+    g2.set_edge(from_vertex=4, to_vertex=6, weight=6)
+    g2.set_edge(from_vertex=4, to_vertex=7, weight=12)
+    g2.set_edge(from_vertex=5, to_vertex=2, weight=3)
+    g2.set_edge(from_vertex=5, to_vertex=4, weight=11)
+    g2.set_edge(from_vertex=5, to_vertex=7, weight=17)
+    g2.set_edge(from_vertex=6, to_vertex=3, weight=5)
+    g2.set_edge(from_vertex=6, to_vertex=4, weight=6)
+    g2.set_edge(from_vertex=7, to_vertex=4, weight=12)
+    g2.set_edge(from_vertex=7, to_vertex=5, weight=17)
     dis, path = dijkstra(g2, start_vertex=4)
-    for i in range(1, 9):
-        print(i, dis[i], path[i].to_list())
+    for i in range(8):
+        print(f'起点：4，终点：{i}，最短距离：{dis[i]}, 最短路径：{path[i].to_list()}')
+    print('-------图权矩阵-------')
+    print(weight_matrix(graph=g2))
+    print('-------弗洛伊德算法-------')
+    dis = floyd(graph=g2)
+    for i in dis:
+        print(f'起点：{i[0][0]}，终点：{i[0][1]}，最短距离：{i[1]}，最短路径：{i[2].to_list()}')
     print('-------普里姆算法-------')
     g3: Graph = prim(graph=g2)
     for i in g3.vertexs:
