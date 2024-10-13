@@ -5,7 +5,7 @@ from random import shuffle
 from pathlib import Path
 from copy import deepcopy
 
-sys.path.append(str(Path(__file__).parent.parent)) # Path(__file__) 获取的当前 py 文件的路径
+sys.path.append(str(Path(__file__).parent.parent)) # Path(__file__) 获取当前 py 文件的路径
 
 from Stack import ArrayStack
 from Queue import ArrayQueue
@@ -72,8 +72,8 @@ def BfsMazePath(maze: list[list[0 | 1 | 2]], start: tuple[int, int]) -> list[tup
 	m: int = len(maze)
 	n: int = len(maze[0])
 	'''queue 和 path 中额外维护了行走路径中每个坐标的上一个坐标在 path 中的索引'''
-	queue: ArrayQueue[tuple[int, int], int] = ArrayQueue() # 行走的路径
-	path: DynamicArray[tuple[int, int], int] = DynamicArray() # 避免出队的元素丢失
+	queue: ArrayQueue[tuple[int, int], int] = ArrayQueue() # 行走的顺序
+	path: DynamicArray[tuple[int, int], int] = DynamicArray() # 实际行走的路径，并记录行走路径中每个坐标是从哪个坐标走一步抵达的
 	maze[start[0]][start[1]] = -1 # 将入队的坐标标记为走过
 	queue.enqueue(item=(start, len(path) - 1))
 	directions: list[function] = [ # 当前位置向四个方向移动后的坐标

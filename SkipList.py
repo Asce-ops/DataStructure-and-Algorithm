@@ -1,20 +1,21 @@
 from random import randint
 from Stack import ArrayStack
+from Iterator import Iterator
 
 class HeaderNode:
     '''头节点'''
     def __init__(self) -> None:
-        self._next: DataNode | None = None # 指向该层的首个数据节点
-        self._down: HeaderNode | None = None # 指向下一层的头节点
+        self._next: DataNode = None # 指向该层的首个数据节点
+        self._down: HeaderNode = None # 指向下一层的头节点
 
 class DataNode:
     '''数据节点'''
     def __init__(self, key: int, val: str) -> None:
         self._key: int = key
         self._val: str = val
-        self._next: DataNode | None = None # 指向该层的下一个数据节点
-        self._down: DataNode | None = None # 指向塔的下一层数据节点
-        self._height: int | None = None # 用于记录塔高，只在每一座塔的顶层节点中不为 None
+        self._next: DataNode = None # 指向该层的下一个数据节点
+        self._down: DataNode = None # 指向塔的下一层数据节点
+        self._height: int = None # 用于记录塔高，只在每一座塔的顶层节点中不为 None
 
 class SkipList:
     '''跳表'''
@@ -24,7 +25,7 @@ class SkipList:
     
     def search(self, key: int) -> str:
         '''查找元素'''
-        cur: HeaderNode | DataNode | None = self._head
+        cur: HeaderNode | DataNode = self._head
         while cur is not None:
             if cur._next is None: # 没有下一个数据节点则跳到下一层
                 cur = cur._down
@@ -39,7 +40,7 @@ class SkipList:
     
     def put(self, key: int, val: str) -> None:
         '''添加（或修改）元素'''
-        cur: HeaderNode | DataNode | None = self._head
+        cur: HeaderNode | DataNode = self._head
         stack: ArrayStack[HeaderNode | DataNode] = ArrayStack() # 要去到下一层时将当前节点入栈
         while cur is not None: # 循环结束时 cur 是第 0 层某节点 _down 的指向
             if cur._next is None:
@@ -59,7 +60,7 @@ class SkipList:
                 else: # key > cur._next._key
                     cur = cur._next
         '''定位到插入位置，新的键值对放在栈顶元素的后面'''
-        lowest_level = stack.pop()
+        lowest_level: HeaderNode | DataNode = stack.pop()
         data: DataNode = DataNode(key=key, val=val)
         data._next = lowest_level._next
         lowest_level._next = data
@@ -68,7 +69,7 @@ class SkipList:
         while randint(a=0, b=1) == 1:
             height += 1
             if stack.is_empty(): # 插入节点所在的塔的高度超过了现有层数
-                new_head = HeaderNode()
+                new_head: HeaderNode = HeaderNode()
                 data = DataNode(key=key, val=val)
                 data._down = top
                 new_head._next = data
@@ -76,7 +77,7 @@ class SkipList:
                 self._head = new_head
                 top = data
             else:
-                prev_level = stack.pop()
+                prev_level: HeaderNode | DataNode = stack.pop()
                 data = DataNode(key=key, val=val)
                 data._down = top
                 data._next = prev_level._next
@@ -86,7 +87,7 @@ class SkipList:
         self._size += 1
         
     def remove(self, key: int) -> None:
-        cur: HeaderNode | DataNode | None = self._head
+        cur: HeaderNode | DataNode = self._head
         while cur is not None:
             if cur._next is None: # 没有下一个数据节点则跳到下一层
                 cur = cur._down
@@ -137,8 +138,8 @@ class SkipList:
     
     def keys(self) -> list[int]:
         '''查看所有键'''
-        result: list[int | None] = [None] * self._size
-        cur: HeaderNode | DataNode | None = self._head
+        result: list[int] = [None] * self._size
+        cur: HeaderNode | DataNode = self._head
         idx: int = 0
         while cur._down is not None: # 循环结束时定位到第 0 层的头节点
             cur = cur._down
@@ -150,8 +151,8 @@ class SkipList:
     
     def values(self) -> list[str]:
         '''查看所有值'''
-        result: list[str | None] = [None] * self._size
-        cur: HeaderNode | DataNode | None = self._head
+        result: list[str] = [None] * self._size
+        cur: HeaderNode | DataNode = self._head
         idx: int = 0
         while cur._down is not None: # 循环结束时定位到第 0 层的头节点
             cur = cur._down
@@ -160,10 +161,23 @@ class SkipList:
             cur = cur._next
             idx += 1
         return result
+    
+    def items(self) -> list[tuple[int, str]]:
+        '''查看所有值'''
+        result: list[tuple[int, str]] = [None] * self._size
+        cur: HeaderNode | DataNode = self._head
+        idx: int = 0
+        while cur._down is not None: # 循环结束时定位到第 0 层的头节点
+            cur = cur._down
+        while cur._next is not None:
+            result[idx] = (cur._next._key, cur._next._val)
+            cur = cur._next
+            idx += 1
+        return result
 
     def height(self, key: int) -> int:
         '''查看指定键对应塔的塔高'''
-        cur: HeaderNode | DataNode | None = self._head
+        cur: HeaderNode | DataNode = self._head
         while cur is not None:
             if cur._next is None: # 没有下一个数据节点则跳到下一层
                 cur = cur._down
@@ -176,24 +190,29 @@ class SkipList:
                     cur = cur._next       
         raise KeyError(f'{key}在跳表中不存在')
     
-    def __iter__(self):
-        self._tmp: HeaderNode | DataNode | None = self._head
-        while self._tmp._down is not None: # 循环结束时定位到第 0 层的头节点
-            self._tmp = self._tmp._down
-        self._tmp = self._tmp._next # 定位到第 0 层的首个数据节点
-        return self
-    
-    def __next__(self) -> int:
-        while self._tmp is not None:
-            result: int = self._tmp._key
-            self._tmp = self._tmp._next
-            return result
-        raise StopIteration
+    class Itr(Iterator):
+        '''该类配套的迭代器'''
+        def __init__(self, outer) -> None:
+            self.outer: SkipList = outer
+            self.cursor: HeaderNode | DataNode = self.outer._head
+            while self.cursor._down is not None: # 循环结束时定位到第 0 层的头节点
+                self.cursor = self.cursor._down
+            self.cursor = self.cursor._next # 定位到第 0 层的首个数据节点
+        
+        def __next__(self) -> int:
+            '''实现 Iterator 接口声明的 __next__ 方法'''
+            while self.cursor is not None:
+                result: int = self.cursor._key
+                self.cursor = self.cursor._next
+                return result
+            raise StopIteration
+    def __iter__(self) -> Itr:
+        return self.Itr(outer=self)
 
 
 
 if __name__ == '__main__':
-    s = SkipList()
+    s: SkipList = SkipList()
     for i in range(10):
         s.put(key=i, val=str(i))
     s.put(key=100, val='1000')
@@ -202,3 +221,6 @@ if __name__ == '__main__':
     for i in s:
         print(f'键{i}对应的塔高为{s.height(key=i)}')
     print(len(s))
+    print(s.items())
+    for i in s:
+        print(i)

@@ -1,11 +1,11 @@
-# type: ignore
+from Iterator import Iterator
 
 class DynamicArray:
     '''使用列表来模拟（动态）数组'''
     def __init__(self, capacity: int = 10) -> None:
         '''构造方法'''
         self._capacity: int = capacity # 数组容量
-        self._arr: list[int | None] = [None] * self._capacity # 实际用于存储元素的数组
+        self._arr: list[int] = [None] * self._capacity # 实际用于存储元素的数组
         self._size: int = 0 # 当前存储的元素数量
         self._extend_ratio: int = 2 # 每次扩容的倍数
 
@@ -33,7 +33,7 @@ class DynamicArray:
             raise IndexError('索引越界')
         if idx < 0:
             idx = (idx + self._size) % self._size
-        result = self._arr[idx]
+        result: int = self._arr[idx]
         for i in range(idx, self._size - 1): # 从前往后逐个移动元素
             self._arr[i] = self._arr[i+1]
         self._arr[self._size-1] = None
@@ -55,7 +55,7 @@ class DynamicArray:
     
     def _extend(self) -> None:
         '''扩容数组'''
-        cur = self._arr
+        cur: list[int] = self._arr
         self._capacity *= self._extend_ratio
         self._arr = [None] * self._capacity
         for i in range(self._size): # 将元素逐个复制到新的内存块中
@@ -107,20 +107,35 @@ class DynamicArray:
     
     def to_list(self) -> list[int]:
         '''返回列表'''
-        result = [None] * self._size
+        result: list[int] = [None] * self._size
         for i in range(self._size):
             result[i] = self._arr[i]
         return result
     
-    def __iter__(self):
+    class Itr(Iterator):
+        '''该类配套的迭代器'''
+        def __init__(self, outer) -> None:
+            self.outer: DynamicArray = outer
+            self.cursor: int = 0
+
+        def __next__(self) -> int:
+            '''实现 Iterator 接口声明的 __next__ 方法'''
+            cur: int = self.cursor
+            if cur >= self.outer._size:
+                raise StopIteration 
+            self.cursor += 1
+            return self.outer._arr[cur]
+
+    def __iter__(self) -> Itr:
         '''使自身可迭代'''
-        self.__tmp: int = 0
-        return self
-    
-    def __next__(self) -> int:
-        '''迭代自身'''
-        cur = self.__tmp
-        if cur >= self._size:
-            raise StopIteration 
-        self.__tmp += 1
-        return self._arr[cur]
+        return self.Itr(outer=self)
+
+
+
+if __name__ == '__main__':
+    arr: DynamicArray = DynamicArray()
+    for i in range(10):
+        arr.append(i)
+    print(arr.to_list())
+    for i in arr:
+        print(i)

@@ -5,7 +5,7 @@ def bubble_sort(arr: list[int], asc: bool = True) -> None:
     3. 以此类推，经过 n-1 轮“冒泡”后，前 n-1 大的元素都被交换至正确位置；
     4. 仅剩的一个元素必定是最小元素，无须排序，因此数组排序完成。
     '''
-    n = len(arr)
+    n: int = len(arr)
     if asc: # 升序排序
         for i in range(1, n): # 外循环：未排序区间为 [0, i]
             for j in range(n - i): # 内循环：将未排序区间 [0, i] 中的最大元素交换至该区间的最右端
@@ -22,10 +22,10 @@ def short_bubble_sort(arr: list[int], asc: bool = True) -> None:
     短冒泡排序
     如果某一轮冒泡中没有任何元素交换位置，则元素的顺序已被排好，无需进行后续轮次的冒泡
     '''
-    n = len(arr)
+    n: int = len(arr)
     if asc: # 升序排序
         for i in range(1, n): # 外循环：未排序区间为 [0, i]
-            order = True
+            order: bool = True
             for j in range(n - i): # 内循环：将未排序区间 [0, i] 中的最大元素交换至该区间的最右端
                 if arr[j] > arr[j + 1]:
                     arr[j], arr[j + 1] = arr[j + 1], arr[j]
@@ -34,7 +34,7 @@ def short_bubble_sort(arr: list[int], asc: bool = True) -> None:
                 break
     else: # 降序排序
         for i in range(1, n): # 外循环：未排序区间为 [0, i]
-            order = True
+            order: bool = True
             for j in range(n - i): # 内循环：将未排序区间 [0, i] 中的最小元素交换至该区间的最右端
                 if arr[j] < arr[j + 1]:
                     arr[j], arr[j + 1] = arr[j + 1], arr[j]
@@ -53,10 +53,10 @@ def selection_sort(arr: list[int], asc: bool = True) -> None:
     4. 以此类推，经过 n-1 轮选择与交换后，数组前 n-1 个元素已排序；
     5. 仅剩的一个元素必定是最大元素，无须排序，因此数组排序完成。
     '''
-    n = len(arr)
+    n: int = len(arr)
     if asc: # 升序排序
         for i in range(n - 1): # 外循环：未排序区间为 [i, n-1]
-            min_index = i # 记录未排序的最小元素的索引
+            min_index: int = i # 记录未排序的最小元素的索引
             for j in range(i + 1, n): # 内循环：找到未排序区间内的最小元素
                 if arr[j] < arr[min_index]:
                     min_index = j
@@ -64,7 +64,7 @@ def selection_sort(arr: list[int], asc: bool = True) -> None:
                 arr[i], arr[min_index] = arr[min_index], arr[i]
     else: # 降序排序
         for i in range(n - 1): # 外循环：未排序区间为 [i, n-1]
-            max_index = i # 记录未排序的最大元素的索引
+            max_index: int = i # 记录未排序的最大元素的索引
             for j in range(i + 1, n): # 内循环：找到未排序区间内的最大元素
                 if arr[j] > arr[max_index]:
                     max_index = j
@@ -83,13 +83,13 @@ def insertion_sort(arr: list[int], asc: bool = True) -> None:
     '''
     if asc: # 升序排序
         for i in range(1, len(arr)): # 外循环：已排序区间为 [0, i-1]
-            base = i
+            base: int = i
             while (base - 1 >= 0) and (arr[base - 1] > arr[base]): # 内循环：将 arr[base] 插入到已排序区间 [0, i-1] 中的正确位置
                 arr[base], arr[base - 1] = arr[base - 1], arr[base]
                 base -= 1
     else: # 降序排序
         for i in range(1, len(arr)): # 外循环：已排序区间为 [0, i-1]
-            base = i
+            base: int = i
             while (base - 1 >= 0) and (arr[base - 1] < arr[base]): # 内循环：将 arr[base] 插入到已排序区间 [0, i-1] 中的正确位置
                 arr[base], arr[base - 1] = arr[base - 1], arr[base]
                 base -= 1
@@ -124,7 +124,7 @@ def shell_sort(arr: list[int], asc: bool = True) -> None:
 
 def merge(arr: list[int], left: int, mid: int, right: int, asc: bool) -> None:
     '''归并排序的辅助函数，用于合并有序的左子数组和右子数组'''
-    tmp: list[int | None] = [0] * (right - left + 1) # 创建一个临时数组 tmp ，用于存放合并后的结果
+    tmp: list[int] = [0] * (right - left + 1) # 创建一个临时数组 tmp ，用于存放合并后的结果
     i, j, k = left, mid + 1, 0 # 初始化左子数组、右子数组和临时数组的起始索引
     if asc: # 升序排序
         while (i <= mid) and (j <= right): # 比较左子数组和右子数组中各自最小的元素
@@ -166,7 +166,7 @@ def merge_sort(arr: list[int], left: int, right: int, asc: bool = True) -> None:
     if left >= right: # 子数组长度为1，终止递归
         return
     '''划分阶段'''
-    mid = (left + right) // 2 # 计算中点
+    mid: int = (left + right) // 2 # 计算中点
     merge_sort(arr=arr, left=left, right=mid, asc=asc) # 递归左子数组
     merge_sort(arr=arr, left=mid+1, right=right, asc=asc) # 递归右子数组
     '''合并阶段'''
@@ -273,7 +273,7 @@ def heap_sort(arr: list[int], asc: bool = True) -> None:
                         idx = minimum
                         continue
                 break # 无需修复节点
-    last_not_leaf = (N - 2) // 2 # 最后一个非叶子节点（有可能等于-1）
+    last_not_leaf: int = (N - 2) // 2 # 最后一个非叶子节点（有可能等于-1）
     '''堆化（倒序遍历将每个元素下沉至合适位置）'''
     for i in range(last_not_leaf, -1, -1):
         sift_down(idx=i, n=N)
@@ -344,7 +344,7 @@ def counting_sort(arr: list[int], asc: bool = True) -> list[int]:
     for num in arr: # 统计各个元素出现的次数
         counter[num - minimum] += 1
     n: int = len(arr)
-    result: list[int | None] = [None] * n
+    result: list[int] = [None] * n
     if asc: # 升序排序
         '''求 counter 的前缀和，将“出现次数”转换为“尾索引”'''
         for i in range(maximum - minimum):
@@ -378,7 +378,7 @@ def radix_sort(arr: list[int], d: int = 10, asc: bool = True) -> list[int]:
         如果第 k 位相等，则元素的相对位置不变（由第 k-1 位决定）
         '''
         counter: list[int] = [0] * d # d 进制的范围是0~d-1，因此需要容量为 d 的计数数组
-        result: list[int | None] = [None] * n
+        result: list[int] = [None] * n
         '''统计 d 进制中各个数字出现的次数'''
         for num in arr:
             x: int = digit(num=num, k=k)
@@ -391,7 +391,7 @@ def radix_sort(arr: list[int], d: int = 10, asc: bool = True) -> list[int]:
             for i in range(d - 1, 0, -1):
                 counter[i - 1] += counter[i]
         for i in range(n - 1, -1, -1): # 倒序遍历以确保相同元素的相对顺序不变
-            num = arr[i]
+            num: int = arr[i]
             x: int = digit(num=num, k=k)
             result[counter[x] - 1] = num # 将 num 放置到对应索引处
             counter[x] -= 1 # 令前缀和自减 1，得到下次放置 num 的索引

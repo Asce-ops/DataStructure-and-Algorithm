@@ -1,23 +1,23 @@
-# type: ignore
+from Iterator import Iterator
 
 class ListNode:
     '''链表的节点'''
     def __init__(self, val: int) -> None:
         '''构造方法'''
         self._val: int = val # 节点实际存储的数据
-        self._next: ListNode | None = None # 指向下一个节点的引用
+        self._next: ListNode = None # 指向下一个节点的引用
 
 class LinkedList:
     '''链表'''
     def __init__(self) -> None:
         '''构造方法'''
-        self._head: ListNode | None = None # 头结点
-        self._tail: ListNode | None = None # 尾节点，便于追加元素
+        self._head: ListNode = None # 头结点
+        self._tail: ListNode = None # 尾节点，便于追加元素
         self._size: int = 0
 
     def append(self, val: int) -> None:
         '''在链表的尾部追加元素'''
-        data = ListNode(val=val)
+        data: ListNode = ListNode(val=val)
         if self._head is None: # 添加第一个元素
             self._head = self._tail = data
         else:
@@ -29,8 +29,8 @@ class LinkedList:
         '''在指定位置插入元素'''
         if idx < 0 or idx > self._size:
             raise IndexError('索引越界')
-        data = ListNode(val=val)
-        if idx == 0: # 在头部插入，需要修改头结点
+        data: ListNode = ListNode(val=val)
+        if idx == 0: # 在头部插入，需要修改头节点
             if self._head is None: # 插入的是第一个元素
                 self._head = self._tail = data
             else:
@@ -40,7 +40,7 @@ class LinkedList:
             self._tail._next = data
             self._tail = data
         else: # 无需修改头结点或尾节点
-            cur = self._head
+            cur: ListNode = self._head
             for _ in range(idx - 1): # 定位到指定位置的前一个位置
                 cur = cur._next
             data._next = cur._next
@@ -54,17 +54,17 @@ class LinkedList:
         if idx < 0:
             idx = (idx + self._size) % self._size
         if idx == 0: # 删除的是第一个元素，需要修改头节点
-            result = self._head
+            result: int = self._head
             if result._next is None: # 删除的是唯一一个元素
                 self._head = self._head = None
             else:
                 self._head = result._next
                 result._next = None # 使得删除的节点不再和链表关联，便于内存回收
         else:
-            cur = self._head
+            cur: ListNode = self._head
             for _ in range(idx - 1): # 定位到指定位置的前一个位置
                 cur = cur._next
-            result = cur._next
+            result: int = cur._next
             if result._next is None: # 删除的是最后一个位置的元素，需修改尾节点
                 cur._next = None
                 self._tail = cur
@@ -79,7 +79,7 @@ class LinkedList:
         if self._head is None: # 链表为空
             raise ValueError(f'{val}不在链表中')
         if self._head._val == val: # 要删除的是第一个元素
-            tmp = self._head
+            tmp: ListNode = self._head
             if tmp._next is None: # 要删除的是唯一一个元素
                 self._head = self._tail = None
             else:
@@ -87,10 +87,10 @@ class LinkedList:
                 tmp._next = None
             self._size -= 1
         else:
-            cur = self._head
+            cur: ListNode = self._head
             while cur._next is not None:
                 if cur._next._val == val: # 定位到待删除元素的前一个位置
-                    tmp = cur._next # 待删除元素的位置
+                    tmp: ListNode = cur._next # 待删除元素的位置
                     if tmp._next is None: # 待删除元素是最后一个元素
                         cur._next = None
                         self._tail = cur
@@ -113,7 +113,7 @@ class LinkedList:
         else:
             if idx < 0:
                 idx = (idx + self._size) % self._size
-            cur = self._head
+            cur: ListNode = self._head
             for _ in range(idx):
                 cur = cur._next
             return cur._val
@@ -129,7 +129,7 @@ class LinkedList:
         else:
             if idx < 0:
                 idx = (idx + self._size) % self._size
-            cur = self._head
+            cur: ListNode = self._head
             for _ in range(idx):
                 cur = cur._next
             cur._val = val
@@ -146,7 +146,7 @@ class LinkedList:
     
     def __contains__(self, val: int) -> bool:
         '''链表中是否存在指定元素'''
-        cur = self._head
+        cur: ListNode = self._head
         while cur is not None:
             if cur._val == val:
                 return True
@@ -157,7 +157,8 @@ class LinkedList:
         '''查看首个指定元素的位置'''
         if self._head is None: # 链表为空
             raise ValueError(f'{val}不在链表中')
-        cur, idx = self._head, 0
+        cur: ListNode = self._head
+        idx: int = 0
         while cur is not None:
             if cur._val == val:
                 return idx
@@ -167,24 +168,39 @@ class LinkedList:
     
     def to_list(self) -> list[int]:
         '''返回列表，左端是头节点'''
-        result = [None] * self._size
-        cur = self._head
-        idx = 0
+        result: list[int] = [None] * self._size
+        cur: ListNode = self._head
+        idx: int = 0
         while cur is not None:
             result[idx] = cur._val
             cur = cur._next
             idx += 1
         return result
-    
-    def __iter__(self):
+
+    class Itr(Iterator):
+        '''该类配套的迭代器'''
+        def __init__(self, outer) -> None:
+            self.outer: LinkedList = outer
+            self.cursor: ListNode = self.outer._head
+
+        def __next__(self) -> int:
+            '''实现 Iterator 接口声明的 __next__ 方法'''
+            cur: ListNode = self.cursor
+            if cur is None:
+                raise StopIteration
+            self.cursor = self.cursor._next
+            return cur._val
+
+    def __iter__(self) -> Itr:
         '''使自身可迭代'''
-        self.__tmp: ListNode | None = self._head
-        return self
-    
-    def __next__(self) -> int:
-        '''迭代自身'''
-        cur = self.__tmp
-        if cur is None:
-            raise StopIteration
-        self.__tmp = self.__tmp._next
-        return cur._val
+        return self.Itr(outer=self)
+
+
+
+if __name__ == '__main__':
+    l: LinkedList = LinkedList()
+    for i in range(10):
+        l.append(i)
+    print(l.to_list())
+    for i in l:
+        print(i)

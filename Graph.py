@@ -128,13 +128,13 @@ def graph_bfs(graph: Graph, start_vertex: int) -> DynamicArray:
     '''广度优先遍历'''
     if start_vertex not in graph:
         raise ValueError(f'顶点{start_vertex}在图中不存在')
-    result: DynamicArray[int | None] = DynamicArray(capacity=len(graph)) # 避免触发数组扩容
+    result: DynamicArray[int] = DynamicArray(capacity=len(graph)) # 避免触发数组扩容
     visited: HashMap = HashMap() # 用哈希表来实现集合
     queue: ArrayQueue = ArrayQueue(capacity=len(graph))
     queue.enqueue(item=graph[start_vertex])
     visited.put(key=start_vertex, val=None) # 需要在入队时添加，如果在出队时添加可能导致顶点重复入队
     while len(queue) > 0:
-        cur = queue.dequeue()
+        cur: Vertex = queue.dequeue()
         result.append(item=cur.val)
         for i in cur.get_to_edges():
             if i not in visited:
@@ -147,7 +147,7 @@ def graph_dfs(graph: Graph, start_vertex: int) -> DynamicArray:
     '''深度优先遍历'''
     if start_vertex not in graph:
         raise ValueError(f'顶点{start_vertex}在图中不存在')
-    result: DynamicArray[int | None] = DynamicArray(capacity=len(graph)) # 避免触发数组扩容
+    result: DynamicArray[int] = DynamicArray(capacity=len(graph)) # 避免触发数组扩容
     visited: HashMap = HashMap() # 用哈希表来实现集合
     def dfs(vertex: int) -> None:
         result.append(item=vertex)
@@ -218,7 +218,7 @@ def floyd(graph: Graph) -> list[tuple[tuple[int, int], int, LinkedList]]:
                     D[from_vertex][to_vertex] = D[from_vertex][middle_vertex] + D[middle_vertex][to_vertex]
                     P[from_vertex][to_vertex] = P[middle_vertex][to_vertex]
     '''返回任意两点间的最短距离和对应路径'''
-    result = [None] * n**2
+    result: list[tuple[tuple[int, int], int, LinkedList]] = [None] * n**2
     idx: int = 0
     for from_vertex in range(n):
         for to_vertex in range(n):
@@ -259,8 +259,8 @@ def prim(graph: Graph) -> Graph:
     used_edges: LinkedList = LinkedList() # 用于组成最小生成树的边
     while len(unselected) > 0:
         minimum: int = float('inf')
-        from_vertex: int | None = None
-        to_vertex: int | None = None
+        from_vertex: int = None
+        to_vertex: int = None
         '''从未选中部分找到距离已选中部分最近的顶点'''
         for vertex in selected:
             to_edges: HashMap = graph[vertex].get_to_edges()
@@ -294,7 +294,7 @@ def kruskal(graph: Graph) -> Graph:
     used_edges: LinkedList = LinkedList() # 用于组成最小生成树的边
     ufs: UnionFindSet = UnionFindSet(arr=graph.vertexs.keys()) # 初始化并查集
     '''获取所有的边'''
-    edges: list[tuple[int, int, int] | None] = [None] * graph.size()
+    edges: list[tuple[int, int, int]] = [None] * graph.size()
     idx: int = 0
     for from_vertex in graph.vertexs:
         to_edges: HashMap = graph[from_vertex].get_to_edges()

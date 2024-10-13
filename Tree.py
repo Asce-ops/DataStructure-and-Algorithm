@@ -1,18 +1,19 @@
 from Queue import ArrayQueue
+from Iterator import Iterator
 
 class TreeNode:
     '''二叉树节点'''
     def __init__(self, key: int, val: str) -> None:
         self.key: int = key # 节点键
         self.val: int = val # 节点值
-        self.left: TreeNode | None = None # 左子节点引用
-        self.right: TreeNode | None = None # 右子节点引用
+        self.left: TreeNode = None # 左子节点引用
+        self.right: TreeNode = None # 右子节点引用
 
 class BinarySearchTree:
     '''二叉搜索树（不允许存储重复的元素）'''
     def __init__(self) -> None:
         '''初始化一棵空树'''
-        self._root: TreeNode | None = None
+        self._root: TreeNode = None
         self._size: int = 0
 
     def put(self, key: int, val: str) -> None:
@@ -21,7 +22,7 @@ class BinarySearchTree:
             self._root = TreeNode(key=key, val=val)
             self._size += 1
             return
-        cur: TreeNode | None = self._root
+        cur: TreeNode = self._root
         while cur is not None: # 新元素只能作为叶子节点插入
             if key < cur.key:
                 prev = cur
@@ -32,7 +33,7 @@ class BinarySearchTree:
             else: # 更新元素
                 cur.val = val
                 return
-        node = TreeNode(key=key, val=val)
+        node: TreeNode = TreeNode(key=key, val=val)
         if key < prev.key:
             prev.left = node
         else: # 不可能出现 key == prev.key 的情况
@@ -41,8 +42,8 @@ class BinarySearchTree:
 
     def remove(self, key: int) -> None:
         '''删除元素'''
-        cur: TreeNode | None = self._root # 待删除节点
-        prev: TreeNode | None = None # 待删除节点的父节点
+        cur: TreeNode = self._root # 待删除节点
+        prev: TreeNode = None # 待删除节点的父节点
         while cur is not None:
             if key < cur.key:
                 prev = cur
@@ -53,9 +54,9 @@ class BinarySearchTree:
             else: # 定位到了待删除元素的位置
                 '''寻找用于替换待删除节点的元素'''
                 if (cur.left is None) or (cur.right is None): # 至多只有一个子节点，用待删除节点唯一的子节点或 None 来替换待删除节点
-                    tmp: TreeNode | None = cur.left or cur.right
+                    tmp: TreeNode = cur.left or cur.right
                 else: # 待删除节点同时存在左右子节点，用待删除节点的后继节点（比当前节点大的最小的节点）来替换待删除节点
-                    tmp: TreeNode | None = cur.right # 后继节点
+                    tmp: TreeNode = cur.right # 后继节点
                     tmp_prev: TreeNode = cur # 后继节点的父节点
                     while tmp.left is not None:
                         tmp_prev = tmp
@@ -83,7 +84,7 @@ class BinarySearchTree:
     
     def search(self, key: int) -> str:
         '''查找元素'''
-        cur: TreeNode | None = self._root
+        cur: TreeNode = self._root
         while cur is not None:
             if key < cur.key:
                 cur = cur.left
@@ -93,10 +94,61 @@ class BinarySearchTree:
                 return cur.val
         raise KeyError(f'{key}在二叉搜索树中不存在')
     
-    def get_root(self) -> TreeNode | None:
+    def get_root(self) -> TreeNode:
         '''返回根节点'''
         return self._root
     
+    def keys(self) -> list[int]:
+        '''层序遍历查看所有键'''
+        queue: ArrayQueue[TreeNode] = ArrayQueue()
+        result: list[int] = [None] * self._size
+        idx: int = 0
+        if self._root is not None:
+            queue.enqueue(item=self._root)
+        while not queue.is_empty():
+            cur: TreeNode = queue.dequeue()
+            result[idx] = cur.key
+            idx += 1
+            if cur.left is not None:
+                queue.enqueue(item=cur.left)
+            if cur.right is not None:
+                queue.enqueue(item=cur.right)
+        return result
+        
+    def values(self) -> list[str]:
+        '''层序遍历查看所有值'''
+        queue: ArrayQueue[TreeNode] = ArrayQueue()
+        result: list[str] = [None] * self._size
+        idx: int = 0
+        if self._root is not None:
+            queue.enqueue(item=self._root)
+        while not queue.is_empty():
+            cur: TreeNode = queue.dequeue()
+            result[idx] = cur.val
+            idx += 1
+            if cur.left is not None:
+                queue.enqueue(item=cur.left)
+            if cur.right is not None:
+                queue.enqueue(item=cur.right)
+        return result
+    
+    def items(self) -> list[tuple[int, str]]:
+        '''层序遍历查看所有值'''
+        queue: ArrayQueue[TreeNode] = ArrayQueue()
+        result: list[tuple[int, str]] = [None] * self._size
+        idx: int = 0
+        if self._root is not None:
+            queue.enqueue(item=self._root)
+        while not queue.is_empty():
+            cur: TreeNode = queue.dequeue()
+            result[idx] = (cur.key, cur.val)
+            idx += 1
+            if cur.left is not None:
+                queue.enqueue(item=cur.left)
+            if cur.right is not None:
+                queue.enqueue(item=cur.right)
+        return result
+
     def __getitem__(self, key: int) -> str:
         return self.search(key=key)
     
@@ -116,56 +168,26 @@ class BinarySearchTree:
     def __len__(self) -> int:
         return self._size
     
-    def __iter__(self):
-        self._queue: ArrayQueue[TreeNode] = ArrayQueue()
-        if self._root is not None:
-            self._queue.enqueue(item=self._root)
-        return self
-    
-    def __next__(self) -> int:
-        '''层序遍历迭代自身'''
-        while not self._queue.is_empty():
-            result: int = self._queue.dequeue()
-            if result.left is not None:
-                self._queue.enqueue(item=result.left)
-            if result.right is not None:
-                self._queue.enqueue(item=result.right)
-            return result.key
-        raise StopIteration
-    
-    def keys(self) -> list[int]:
-        '''层序遍历查看所有键'''
-        queue: ArrayQueue[TreeNode] = ArrayQueue()
-        result: list[int | None] = [None] * self._size
-        idx: int = 0
-        if self._root is not None:
-            queue.enqueue(item=self._root)
-        while not queue.is_empty():
-            cur: TreeNode = queue.dequeue()
-            result[idx] = cur.key
-            idx += 1
-            if cur.left is not None:
-                queue.enqueue(item=cur.left)
-            if cur.right is not None:
-                queue.enqueue(item=cur.right)
-        return result
+    class Itr(Iterator):
+        def __init__(self, outer) -> None:
+            self.outer: BinarySearchTree = outer
+            self.queue: ArrayQueue[TreeNode] = ArrayQueue()
+            if self.outer._root is not None:
+                self.queue.enqueue(item=self.outer._root)
         
-    def values(self) -> list[str]:
-        '''层序遍历查看所有值'''
-        queue: ArrayQueue[TreeNode] = ArrayQueue()
-        result: list[str | None] = [None] * self._size
-        idx: int = 0
-        if self._root is not None:
-            queue.enqueue(item=self._root)
-        while not queue.is_empty():
-            cur: TreeNode = queue.dequeue()
-            result[idx] = cur.val
-            idx += 1
-            if cur.left is not None:
-                queue.enqueue(item=cur.left)
-            if cur.right is not None:
-                queue.enqueue(item=cur.right)
-        return result
+        def __next__(self) -> int:
+            '''层序遍历'''
+            while not self.queue.is_empty():
+                result: TreeNode = self.queue.dequeue()
+                if result.left is not None:
+                    self.queue.enqueue(item=result.left)
+                if result.right is not None:
+                    self.queue.enqueue(item=result.right)
+                return result.key
+            raise StopIteration
+
+    def __iter__(self) -> Itr:
+        return self.Itr(outer=self)
     
 
 
@@ -174,9 +196,9 @@ class AvlTreeNode():
     def __init__(self, key: int, val: str) -> None:
         self.key: int = key # 节点键
         self.val: int = val # 节点值
-        self.left: AvlTreeNode | None = None # 左子节点引用
-        self.right: AvlTreeNode | None = None # 右子节点引用
-        self.parent: AvlTreeNode | None = None # 父节点的引用
+        self.left: AvlTreeNode = None # 左子节点引用
+        self.right: AvlTreeNode = None # 右子节点引用
+        self.parent: AvlTreeNode = None # 父节点的引用
         self.height: int = 0 # 规定叶子节点高度为 0
         self.balance_factor: int = 0 # 平衡因子
 
@@ -193,11 +215,11 @@ class AvlTree():
     '''AVL树'''
     def __init__(self) -> None:
         '''初始化一棵空树'''
-        self._root: AvlTreeNode | None = None
+        self._root: AvlTreeNode = None
         self._size: int = 0
 
     @staticmethod # 静态方法
-    def get_height(node: AvlTreeNode | None) -> int: # 因为需要计算空节点 None 的高度，所以不方便在 AvlTreeNode 类中定义
+    def get_height(node: AvlTreeNode) -> int: # 因为需要计算空节点 None 的高度，所以不方便在 AvlTreeNode 类中定义
         '''返回节点的高度（空节点高度为 -1 ，叶子节点高度为 0）'''
         if node is not None:
             return node.height
@@ -220,7 +242,7 @@ class AvlTree():
         将旧根节点作为新根节点的左子节点；
         如果新根节点已经有一个左子节点，将其作为新左子节点（旧根节点）的右子节点。
         '''
-        new_root = node.right # 子树新的根节点
+        new_root: AvlTreeNode = node.right # 子树新的根节点
         new_root.parent = node.parent
         if node.parent is None: # 失衡节点是根节点
             self._root = new_root
@@ -247,7 +269,7 @@ class AvlTree():
         将旧根节点作为新根节点的右子节点；
         如果新根节点已经有一个右子节点，将其作为新右子节点（旧根节点）的左子节点。
         '''
-        new_root = node.left # 子树新的根节点
+        new_root: AvlTreeNode = node.left # 子树新的根节点
         new_root.parent = node.parent
         if node.parent is None: # 失衡节点是根节点
             self._root = new_root
@@ -289,7 +311,7 @@ class AvlTree():
             self._root = AvlTreeNode(key=key, val=val)
             self._size += 1
             return
-        cur: AvlTreeNode | None = self._root
+        cur: AvlTreeNode = self._root
         while cur is not None: # 新元素只能作为叶子节点插入
             if key < cur.key:
                 prev = cur
@@ -300,7 +322,7 @@ class AvlTree():
             else: # 更新元素
                 cur.val = val
                 return
-        node = AvlTreeNode(key=key, val=val)
+        node: AvlTreeNode = AvlTreeNode(key=key, val=val)
         if key < prev.key:
             prev.left = node
         else: # 不可能出现 key == prev.key 的情况
@@ -308,7 +330,7 @@ class AvlTree():
         node.parent = prev
         self._size += 1
         '''检查新插入节点的各个祖先节点是否失衡'''
-        grand: AvlTreeNode | None = prev
+        grand: AvlTreeNode = prev
         while grand is not None: # 叶子节点的高度和平衡因子无需更新
             AvlTree.update_height(node=grand)
             AvlTree.update_balance_factor(node=grand)
@@ -317,9 +339,9 @@ class AvlTree():
                 break # 插入导致的失衡只需要调整一次
             grand = grand.parent
 
-    def successor(self, node: AvlTreeNode) -> AvlTreeNode | None:
+    def successor(self, node: AvlTreeNode) -> AvlTreeNode:
         '''寻找给定节点的后继节点'''
-        result: AvlTreeNode | None = node.right # 后继节点
+        result: AvlTreeNode = node.right # 后继节点
         if result is not None:
             while result.left is not None:
                 result = result.left
@@ -327,7 +349,7 @@ class AvlTree():
     
     def remove(self, key: int) -> None:
         '''删除元素'''
-        cur: AvlTreeNode | None = self._root # 待删除节点
+        cur: AvlTreeNode = self._root # 待删除节点
         while cur is not None:
             if key < cur.key:
                 cur = cur.left
@@ -336,11 +358,11 @@ class AvlTree():
             else: # 定位到了待删除元素的位置
                 '''寻找用于替换待删除节点的元素'''
                 if (cur.left is None) or (cur.right is None): # 至多只有一个子节点，用待删除节点唯一的子节点或 None 来替换待删除节点
-                    tmp: AvlTreeNode | None = cur.left or cur.right
-                    grand: AvlTreeNode | None = cur.parent # 实际被删除节点的父节点
+                    tmp: AvlTreeNode = cur.left or cur.right
+                    grand: AvlTreeNode = cur.parent # 实际被删除节点的父节点
                 else: # 待删除节点同时存在左右子节点，用待删除节点的后继节点（比当前节点大的最小的节点）来替换待删除节点
-                    tmp: AvlTreeNode | None = self.successor(node=cur) # 后继节点
-                    grand: AvlTreeNode | None = tmp.parent # 实际被删除节点的父节点
+                    tmp: AvlTreeNode = self.successor(node=cur) # 后继节点
+                    grand: AvlTreeNode = tmp.parent # 实际被删除节点的父节点
                     '''删除后继节点'''
                     if tmp.is_left_child(): # 后继节点是其父节点的左子节点
                         tmp.parent.left = tmp.right
@@ -379,7 +401,7 @@ class AvlTree():
 
     def search(self, key: int) -> str:
         '''查找元素'''
-        cur: AvlTreeNode | None = self._root
+        cur: AvlTreeNode = self._root
         while cur is not None:
             if key < cur.key:
                 cur = cur.left
@@ -389,10 +411,61 @@ class AvlTree():
                 return cur.val
         raise KeyError(f'{key}在AVL树中不存在')
     
-    def get_root(self) -> TreeNode | None:
+    def get_root(self) -> TreeNode:
         '''返回根节点'''
         return self._root
     
+    def keys(self) -> list[int]:
+        '''层序遍历查看所有键'''
+        queue: ArrayQueue[AvlTreeNode] = ArrayQueue()
+        result: list[int] = [None] * self._size
+        idx: int = 0
+        if self._root is not None:
+            queue.enqueue(item=self._root)
+        while not queue.is_empty():
+            cur: TreeNode = queue.dequeue()
+            result[idx] = cur.key
+            idx += 1
+            if cur.left is not None:
+                queue.enqueue(item=cur.left)
+            if cur.right is not None:
+                queue.enqueue(item=cur.right)
+        return result
+        
+    def values(self) -> list[str]:
+        '''层序遍历查看所有值'''
+        queue: ArrayQueue[AvlTreeNode] = ArrayQueue()
+        result: list[str] = [None] * self._size
+        idx: int = 0
+        if self._root is not None:
+            queue.enqueue(item=self._root)
+        while not queue.is_empty():
+            cur: TreeNode = queue.dequeue()
+            result[idx] = cur.val
+            idx += 1
+            if cur.left is not None:
+                queue.enqueue(item=cur.left)
+            if cur.right is not None:
+                queue.enqueue(item=cur.right)
+        return result
+    
+    def items(self) -> list[tuple[int, str]]:
+        '''层序遍历查看所有值'''
+        queue: ArrayQueue[AvlTreeNode] = ArrayQueue()
+        result: list[tuple[int, str]] = [None] * self._size
+        idx: int = 0
+        if self._root is not None:
+            queue.enqueue(item=self._root)
+        while not queue.is_empty():
+            cur: TreeNode = queue.dequeue()
+            result[idx] = (cur.key, cur.val)
+            idx += 1
+            if cur.left is not None:
+                queue.enqueue(item=cur.left)
+            if cur.right is not None:
+                queue.enqueue(item=cur.right)
+        return result
+
     def __getitem__(self, key: int) -> str:
         return self.search(key=key)
     
@@ -412,63 +485,33 @@ class AvlTree():
     def __len__(self) -> int:
         return self._size
     
-    def __iter__(self):
-        self._queue: ArrayQueue[AvlTreeNode] = ArrayQueue()
-        if self._root is not None:
-            self._queue.enqueue(item=self._root)
-        return self
-    
-    def __next__(self) -> int:
-        '''层序遍历迭代自身'''
-        while not self._queue.is_empty():
-            result: int = self._queue.dequeue()
-            if result.left is not None:
-                self._queue.enqueue(item=result.left)
-            if result.right is not None:
-                self._queue.enqueue(item=result.right)
-            return result.key
-        raise StopIteration
-    
-    def keys(self) -> list[int]:
-        '''层序遍历查看所有键'''
-        queue: ArrayQueue[AvlTreeNode] = ArrayQueue()
-        result: list[int | None] = [None] * self._size
-        idx: int = 0
-        if self._root is not None:
-            queue.enqueue(item=self._root)
-        while not queue.is_empty():
-            cur: TreeNode = queue.dequeue()
-            result[idx] = cur.key
-            idx += 1
-            if cur.left is not None:
-                queue.enqueue(item=cur.left)
-            if cur.right is not None:
-                queue.enqueue(item=cur.right)
-        return result
+    class Itr(Iterator):
+        def __init__(self, outer) -> None:
+            self.outer: AvlTree = outer
+            self.queue: ArrayQueue[AvlTreeNode] = ArrayQueue()
+            if self.outer._root is not None:
+                self.queue.enqueue(item=self.outer._root)
         
-    def values(self) -> list[str]:
-        '''层序遍历查看所有值'''
-        queue: ArrayQueue[AvlTreeNode] = ArrayQueue()
-        result: list[str | None] = [None] * self._size
-        idx: int = 0
-        if self._root is not None:
-            queue.enqueue(item=self._root)
-        while not queue.is_empty():
-            cur: TreeNode = queue.dequeue()
-            result[idx] = cur.val
-            idx += 1
-            if cur.left is not None:
-                queue.enqueue(item=cur.left)
-            if cur.right is not None:
-                queue.enqueue(item=cur.right)
-        return result
+        def __next__(self) -> int:
+            '''层序遍历'''
+            while not self.queue.is_empty():
+                result: AvlTreeNode = self.queue.dequeue()
+                if result.left is not None:
+                    self.queue.enqueue(item=result.left)
+                if result.right is not None:
+                    self.queue.enqueue(item=result.right)
+                return result.key
+            raise StopIteration
+
+    def __iter__(self) -> Itr:
+        return self.Itr(outer=self)
 
 
 
 '''二叉树的遍历'''
 from LinkedList import LinkedList
 
-def level_order(root: TreeNode | AvlTreeNode | None) -> LinkedList:
+def level_order(root: TreeNode | AvlTreeNode) -> LinkedList:
     '''层序遍历（即广度优先遍历，从顶部到底部逐层遍历二叉树）'''
     queue: ArrayQueue[TreeNode | AvlTreeNode] = ArrayQueue()
     result: LinkedList = LinkedList()
@@ -487,7 +530,7 @@ def level_order(root: TreeNode | AvlTreeNode | None) -> LinkedList:
 前序、中序和后序遍历都属于深度优先遍历
 前中后指的是每一层的“根节点”；遍历一定是先左后右的，所以前中后序分别是：中左右、左中右、左右中
 '''
-def pre_order(root: TreeNode | AvlTreeNode | None, result: LinkedList) -> None: # 如果给 result 设置默认值，由于它是可变的数据类型，每一次调用该函数都会使得默认值发生变化，导致除第一次调用外每次调用返回结果都有误
+def pre_order(root: TreeNode | AvlTreeNode, result: LinkedList) -> None: # 如果给 result 设置默认值，由于它是可变的数据类型，每一次调用该函数都会使得默认值发生变化，导致除第一次调用外每次调用返回结果都有误
     '''前序遍历，将树中的元素依次追加到 result 中'''
     if root is None:
         return
@@ -496,7 +539,7 @@ def pre_order(root: TreeNode | AvlTreeNode | None, result: LinkedList) -> None: 
     pre_order(root=root.left, result=result)
     pre_order(root=root.right, result=result)
 
-def in_order(root: TreeNode | AvlTreeNode | None, result: LinkedList) -> None:
+def in_order(root: TreeNode | AvlTreeNode, result: LinkedList) -> None:
     '''中序遍历，将树中的元素依次追加到 result 中'''
     if root is None:
         return
@@ -505,7 +548,7 @@ def in_order(root: TreeNode | AvlTreeNode | None, result: LinkedList) -> None:
     result.append(val=root.key)
     in_order(root=root.right, result=result)
 
-def post_order(root: TreeNode | AvlTreeNode | None, result: LinkedList) -> None:
+def post_order(root: TreeNode | AvlTreeNode, result: LinkedList) -> None:
     '''后序遍历，将树中的元素依次追加到 result 中'''
     if root is None:
         return
@@ -544,3 +587,4 @@ if __name__ == '__main__':
         print(i)
     print(avl.keys())
     print(avl.values())
+    print(avl.items())

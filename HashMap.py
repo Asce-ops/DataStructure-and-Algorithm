@@ -1,4 +1,4 @@
-# type: ignore
+from Iterator import Iterator
 
 class Pair:
     '''键值对'''
@@ -13,14 +13,16 @@ class HashMapOpenAddressing:
     采用惰性删除机制，否则再哈希过程中可能会提前停止；
     除了更新键值对，其他操作时不要改变键值对的存放位置
     '''
+    _TOMBSTONE: Pair = Pair(key=-1, val='-1') # 删除标记
+
     def __init__(self, capacity: int = 13) -> None:
         '''构造方法'''
         self._capacity: int = capacity # 哈希表容量
-        self._bucket: list[Pair | None] = [None] * self._capacity # 数组桶
+        self._bucket: list[Pair] = [None] * self._capacity # 数组桶
         self._size: int = 0 # 键值对数量
         self._extend_ratio: int = 2 # 扩容系数
         self._load_thres: float = 0.75 # 触发扩容的负载因子阈值
-        self._TOMBSTONE: Pair = Pair(key=-1, val='-1') # 删除标记
+        # self._TOMBSTONE: Pair = Pair(key=-1, val='-1') # 删除标记
 
     @staticmethod # 静态方法（用类名或者实例来调用）
     def hash(key: int) -> int:
@@ -33,7 +35,7 @@ class HashMapOpenAddressing:
     
     def rehash(self, old_hash: int) -> int:
         '''通过再哈希来开放寻址'''
-        k = 1 # 再探测时如果不能遍历所有的桶又无法触发扩容机制，则可能陷入死循环（探测到的永远是被占据的桶）
+        k: int = 1 # 再探测时如果不能遍历所有的桶又无法触发扩容机制，则可能陷入死循环（探测到的永远是被占据的桶）
         return (old_hash + k) % self._capacity # 线性探测
     
     def load_factor(self) -> float:
@@ -44,8 +46,8 @@ class HashMapOpenAddressing:
         '''新增或更新键值对'''
         if self.load_factor() >= self._load_thres: # 扩容
             self._extend()
-        idx = self.hash_func(key=key)
-        first_blank: int | None = None # 记录遇到的首个空栈（存储了 None 或删除标记）
+        idx: int = self.hash_func(key=key)
+        first_blank: int = None # 记录遇到的首个空栈（存储了 None 或删除标记）
         while self._bucket[idx] is not None: # 扩容机制保证了数组中一定有 None 的存在
             if self._bucket[idx]._key == key: # 键存在则更新其对应值
                 if first_blank is not None: # 将元素移至距离探测起点更近的空桶，减少查找时所需的哈希次数
@@ -66,7 +68,7 @@ class HashMapOpenAddressing:
 
     def index(self, key: int) -> int:
         '''确定索引位置'''
-        idx = self.hash_func(key=key)
+        idx: int = self.hash_func(key=key)
         while self._bucket[idx] is not None: # 扩容机制保证了数组中一定有 None 的存在
             if self._bucket[idx]._key == key: # 键存在
                 return idx
@@ -75,19 +77,19 @@ class HashMapOpenAddressing:
 
     def remove(self, key: int) -> None:
         '''删除键值对'''
-        idx = self.index(key=key)
+        idx: int = self.index(key=key)
         self._bucket[idx] = self._TOMBSTONE
         self._size -= 1
     
     def get(self, key: int) -> str:
         '''查询键值对'''
-        idx = self.index(key=key)
+        idx: int = self.index(key=key)
         return self._bucket[idx]._val
 
     def _extend(self) -> None:
         '''扩容'''
-        cur = self._bucket
-        prev_capacity = self._capacity
+        cur: list[Pair] = self._bucket
+        prev_capacity: int = self._capacity
         self._capacity *= self._extend_ratio
         self._bucket = [None] * self._capacity
         i: int = 0 # 当前桶
@@ -95,10 +97,10 @@ class HashMapOpenAddressing:
         while i < prev_capacity:
             if n == self._size:
                 break
-            item = cur[i]
+            item: Pair = cur[i]
             i += 1
             if (item is not None) and (item is not self._TOMBSTONE):
-                idx = self.hash_func(key=item._key)
+                idx: int = self.hash_func(key=item._key)
                 while self._bucket[idx] is not None:
                     idx = self.rehash(old_hash=idx)
                 self._bucket[idx] = item
@@ -106,10 +108,10 @@ class HashMapOpenAddressing:
 
     def keys(self) -> list[int]:
         '''查看所有键'''
-        result = [None] * self._size
-        idx = 0
+        result: list[int] = [None] * self._size
+        idx: int = 0
         for i in range(self._capacity):
-            item = self._bucket[i]
+            item: Pair = self._bucket[i]
             if (item is not None) and (item is not self._TOMBSTONE):
                 result[idx] = item._key
                 idx += 1
@@ -119,12 +121,25 @@ class HashMapOpenAddressing:
     
     def values(self) -> list[str]:
         '''查看所有键'''
-        result = [None] * self._size
-        idx = 0
+        result: list[int] = [None] * self._size
+        idx: int = 0
         for i in range(self._capacity):
-            item = self._bucket[i]
+            item: Pair = self._bucket[i]
             if (item is not None) and (item is not self._TOMBSTONE):
                 result[idx] = item._val
+                idx += 1
+            if idx >= self._size:
+                break
+        return result
+    
+    def items(self) -> list[tuple[int, str]]:
+        '''查看所有键'''
+        result: list[tuple[int, str]] = [None] * self._size
+        idx: int = 0
+        for i in range(self._capacity):
+            item: Pair = self._bucket[i]
+            if (item is not None) and (item is not self._TOMBSTONE):
+                result[idx] = (item._key, item._val)
                 idx += 1
             if idx >= self._size:
                 break
@@ -148,22 +163,27 @@ class HashMapOpenAddressing:
             return True
         except KeyError:
             return False
-        
-    def __iter__(self):
-        self.__idx: int = 0 # 当前桶
-        self.__cur: int = 0 # 已经遍历了的元素个数
-        return self
     
-    def __next__(self) -> int: # 遍历返回键
-        while self.__idx < self._capacity:
-            if self.__cur == self._size:
-                break
-            item = self._bucket[self.__idx]
-            self.__idx += 1
-            if (item is not None) and (item is not self._TOMBSTONE):
-                self.__cur += 1
-                return item._key
-        raise StopIteration
+    class Itr(Iterator):
+        def __init__(self, outer) -> None:
+            self.outer: HashMapOpenAddressing = outer
+            self.cursor: int = 0 # 当前桶
+            self.had: int = 0 # 已经遍历了的元素的个数
+
+        def __next__(self) -> object:
+            while self.cursor < self.outer._capacity:
+                if self.had == self.outer._size:
+                    break
+                item: Pair = self.outer._bucket[self.cursor]
+                self.cursor += 1
+                if (item is not None) and (item is not self.outer._TOMBSTONE):
+                    self.had += 1
+                    return item._key
+            raise StopIteration
+
+    def __iter__(self) -> Itr:
+        return self.Itr(outer=self)
+
 
 
 class Node:
@@ -172,14 +192,14 @@ class Node:
         '''构造方法'''
         self._key: int = key
         self._val: int = val
-        self.next: Node | None = None
+        self.next: Node = None
 
 class HashMapChaining:
     '''链式地址哈希表，数组的每一个桶存储的都是节点'''
     def __init__(self, capacity: int = 13) -> None:
         '''构造方法'''
         self._capacity: int = capacity
-        self._bucket: list[Node | None] = [None] * self._capacity
+        self._bucket: list[Node] = [None] * self._capacity
         self._size: int = 0
         self._extend_ratio: int = 2 # 扩容系数
         self._avg_thres: int = 8 # 平均每个桶可以存储的最大元素个数（用于触发扩容）
@@ -197,9 +217,9 @@ class HashMapChaining:
         '''新增或更新键值对'''
         if self._size >= self._avg_thres * self._capacity: # 扩容
             self._extend()
-        idx = self.hash_func(key=key)
+        idx: int = self.hash_func(key=key)
         if self._bucket[idx] is not None:
-            cur = self._bucket[idx]
+            cur: Node = self._bucket[idx]
             while cur.next is not None:
                 if cur._key == key: # 键存在，更新键值对
                     cur._val = val
@@ -215,9 +235,9 @@ class HashMapChaining:
     
     def remove(self, key: int) -> None:
         '''删除键值对'''
-        idx = self.hash_func(key=key)
+        idx: int = self.hash_func(key=key)
         if self._bucket[idx] is not None:
-            cur = self._bucket[idx]
+            cur: Node = self._bucket[idx]
             if cur._key == key:
                 self._bucket[idx] = cur.next
                 cur.next = None # 便于内存回收
@@ -225,7 +245,7 @@ class HashMapChaining:
                 return
             while cur.next is not None: # 在 cur 定位到某个桶时，这个桶在这之前已经被检查过了
                 if cur.next._key == key:
-                    tmp = cur.next
+                    tmp: Node = cur.next
                     cur.next = tmp.next
                     tmp.next = None # 便于内存回收
                     self._size -= 1
@@ -235,8 +255,8 @@ class HashMapChaining:
     
     def get(self, key: int) -> str:
         '''查询键值对'''
-        idx = self.hash_func(key=key)
-        cur = self._bucket[idx]
+        idx: int = self.hash_func(key=key)
+        cur: Node = self._bucket[idx]
         while cur is not None:
             if cur._key == key: # 键存在，返回值
                 return cur._val
@@ -245,19 +265,19 @@ class HashMapChaining:
     
     def _extend(self) -> None:
         '''扩容'''
-        cur = self._bucket
-        prev_capacity = self._capacity
+        cur: list[Node] = self._bucket
+        prev_capacity: int = self._capacity
         self._capacity *= self._extend_ratio
         self._bucket = [None] * self._capacity
         i: int = 0 # 当前桶
         n: int = 0 # 已经复制了的元素个数
-        item: Node | None = cur[i] # 当前节点
+        item: Node = cur[i] # 当前节点
         while i < prev_capacity:
             if n == self._size:
                 break
             if item is not None:
-                idx = self.hash_func(key=item._key)
-                tmp: Node | None = self._bucket[idx]
+                idx: int = self.hash_func(key=item._key)
+                tmp: Node = self._bucket[idx]
                 self._bucket[idx] = item # 在链表头部新增节点
                 item = item.next
                 self._bucket[idx].next = tmp # 更新完 item 再更新链表头节点的下一个指向
@@ -268,10 +288,10 @@ class HashMapChaining:
     
     def keys(self) -> list[int]:
         '''查看所有键'''
-        result: list[int | None] = [None] * self._size
-        idx = 0
+        result: list[int] = [None] * self._size
+        idx: int = 0
         for i in range(self._capacity):
-            cur = self._bucket[i]
+            cur: Node = self._bucket[i]
             while cur is not None:
                 result[idx] = cur._key
                 idx += 1
@@ -280,16 +300,28 @@ class HashMapChaining:
     
     def values(self) -> list[str]:
         '''查看所有值'''
-        result: list[str | None] = [None] * self._size
-        idx = 0
+        result: list[str] = [None] * self._size
+        idx: int = 0
         for i in range(self._capacity):
-            cur = self._bucket[i]
+            cur: Node = self._bucket[i]
             while cur is not None:
                 result[idx] = cur._val
                 idx += 1
                 cur = cur.next
         return result
     
+    def items(self) -> list[tuple[int, str]]:
+        '''查看所有值'''
+        result: list[tuple[int, str]] = [None] * self._size
+        idx: int = 0
+        for i in range(self._capacity):
+            cur: Node = self._bucket[i]
+            while cur is not None:
+                result[idx] = (cur._key, cur._val)
+                idx += 1
+                cur = cur.next
+        return result
+
     def __getitem__(self, key: int) -> str:
         return self.get(key=key)
     
@@ -309,26 +341,29 @@ class HashMapChaining:
         except KeyError:
             return False
         
-    def __iter__(self):
-        self.__idx: int = 0 # 当前桶
-        self.__cur: int = 0 # 已经遍历了的元素个数
-        self.__tmp: Node | None = self._bucket[self.__idx] # 当前节点
-        return self
-    
-    def __next__(self) -> int: # 遍历返回键
-        while self.__idx < self._capacity:
-            if self.__cur == self._size:
-                break
-            if self.__tmp is not None:
-                result = self.__tmp._key
-                self.__tmp = self.__tmp.next
-                self.__cur += 1
-                return result
-            else:
-                self.__idx += 1
-                self.__tmp = self._bucket[self.__idx]
-        raise StopIteration
-    
+    class Itr(Iterator):
+        def __init__(self, outer) -> None:
+            self.outer: HashMapChaining = outer
+            self.idx: int = 0 # 当前桶
+            self.had: int = 0 # 已经遍历了的元素个数
+            self.cursor: Node = self.outer._bucket[self.idx] # 当前节点
+
+        def __next__(self) -> int:
+            while self.idx < self.outer._capacity:
+                if self.had == self.outer._size:
+                    break
+                if self.cursor is not None:
+                    result: int = self.cursor._key
+                    self.cursor = self.cursor.next
+                    self.had += 1
+                    return result
+                else:
+                    self.idx += 1
+                    self.cursor = self.outer._bucket[self.idx]
+            raise StopIteration
+
+    def __iter__(self) -> Itr:
+        return self.Itr(outer=self)
 
 
 
@@ -338,7 +373,7 @@ if __name__ == '__main__':
         h1.put(key=i, val=str(i))
         h2.put(key=i, val=str(i))
     del h1[3]
-    del h1[3]
+    # del h1[3]
     print('开始遍历h1')
     for i in h1:
         print(i)
