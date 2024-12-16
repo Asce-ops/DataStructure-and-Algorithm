@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).parent.parent)) # Path(__file__) 获取的当前 py 文件的路径
+sys.path.append(str(object=Path(__file__).parent.parent)) # Path(__file__) 获取的当前 py 文件的路径
 
 from Array import DynamicArray
 from Graph import Graph, graph_dfs
@@ -16,7 +16,7 @@ def knight_graph(rows: int, cols: int) -> Graph:
     graph: Graph = Graph()
     def legal_moves(row: int, col: int) -> DynamicArray:
         '''生成骑士在当前位置合法的走法'''
-        next_moves: DynamicArray = DynamicArray(capacity=8)
+        next_moves: DynamicArray = DynamicArray()
         move_offsets: list[tuple[int, int]] = [(-1, -2), (-1, 2), (-2, -1), (-2, 1), (1, -2), (1, 2), (2, -1), (2, 1)]
         for row_off, col_off in move_offsets:
             next_row: int = row + row_off

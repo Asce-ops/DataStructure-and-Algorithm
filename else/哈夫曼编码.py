@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).parent.parent)) # Path(__file__) 获取的当前 py 文件的路径
+sys.path.append(str(object=Path(__file__).parent.parent)) # Path(__file__) 获取的当前 py 文件的路径
 
 from Heap import MinPriorityQueue
 from HashMap import HashMapChaining

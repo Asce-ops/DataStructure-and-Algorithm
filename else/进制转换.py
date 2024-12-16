@@ -1,11 +1,13 @@
 import sys
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).parent.parent)) # Path(__file__) 获取的当前 py 文件的路径
+sys.path.append(str(object=Path(__file__).parent.parent)) # Path(__file__) 获取的当前 py 文件的路径
 from Stack import ArrayStack
 from HashMap import HashMapOpenAddressing as HashMap
 
-# 只讨论正数的进制转换
+
+
+# 只讨论正整数的进制转换
 
 def From10BaseConverter(num: int, to_base: int) -> str:
     '''十进制转其他进制'''
